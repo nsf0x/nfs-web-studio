@@ -75,7 +75,7 @@ Repository ini menggunakan `vercel-php` untuk menjalankan Laravel sebagai PHP Fu
 4. Node.js Version: **22.x**.
 5. Tambahkan Environment Variables dari `vercel.env.example` untuk Production, Preview, dan Development sesuai kebutuhan. Jangan mengunggah file `vercel.env`.
 
-`vercel.json` mengirim permintaan yang bukan berkas statis ke `api/index.php`. Laravel memakai direktori sementara `/tmp` untuk data runtime yang dapat ditulis; direktori ini tidak persisten. Migrasi production harus dijalankan secara terpisah setelah kompatibilitas PostgreSQL dan koneksi Supabase dikonfirmasi.
+`vercel.json` mengirim permintaan yang bukan berkas statis ke `api/index.php`. Laravel memakai direktori sementara `/tmp` untuk bootstrap cache serta data runtime yang dapat ditulis; direktori ini tidak persisten. Migrasi production harus dijalankan secara terpisah setelah kompatibilitas PostgreSQL dan koneksi Supabase dikonfirmasi.
 
 ## Pindah dari Lokal ke Online
 
