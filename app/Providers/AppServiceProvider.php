@@ -15,7 +15,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Share site settings to all Blade views
-        View::composer('*', SiteSettingComposer::class);
+        $this->app->booted(static function (): void {
+            View::composer('*', SiteSettingComposer::class);
+        });
     }
 }
