@@ -16,7 +16,7 @@ class ServiceSeeder extends Seeder
                 'short_description' => 'Website profesional untuk membangun kredibilitas bisnis Anda.',
                 'sort_order'        => 1,
                 'icon'              => '🏢',
-                'is_active'         => true,
+                'is_active'         => DB::raw('true'),
             ],
             [
                 'name'              => 'Website Toko Online',
@@ -24,7 +24,7 @@ class ServiceSeeder extends Seeder
                 'short_description' => 'Toko online lengkap dengan katalog dan checkout.',
                 'sort_order'        => 2,
                 'icon'              => '🛍️',
-                'is_active'         => true,
+                'is_active'         => DB::raw('true'),
             ],
             [
                 'name'              => 'Sistem Informasi Custom',
@@ -32,7 +32,7 @@ class ServiceSeeder extends Seeder
                 'short_description' => 'Aplikasi web sesuai kebutuhan proses bisnis Anda.',
                 'sort_order'        => 3,
                 'icon'              => '💻',
-                'is_active'         => true,
+                'is_active'         => DB::raw('true'),
             ],
             [
                 'name'              => 'Redesign & Maintenance',
@@ -40,7 +40,7 @@ class ServiceSeeder extends Seeder
                 'short_description' => 'Perbarui tampilan dan rawat website yang sudah ada.',
                 'sort_order'        => 4,
                 'icon'              => '🛠️',
-                'is_active'         => true,
+                'is_active'         => DB::raw('true'),
             ],
         ];
 

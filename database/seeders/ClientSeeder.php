@@ -19,7 +19,7 @@ class ClientSeeder extends Seeder
         foreach ($clients as $client) {
             DB::table('clients')->updateOrInsert(
                 ['slug' => $client['slug']],
-                array_merge($client, ['is_active' => true])
+                array_merge($client, ['is_active' => DB::raw('true')])
             );
         }
     }
