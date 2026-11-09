@@ -23,6 +23,7 @@ if (parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) === '/__runtime-chec
             'view_paths_configured' => is_array($app['config']->get('view.paths')),
         ]);
     } catch (Throwable $exception) {
+        error_log('Runtime bootstrap failed: '.get_class($exception).': '.$exception->getMessage());
         http_response_code(500);
         header('Content-Type: application/json');
         echo json_encode([
