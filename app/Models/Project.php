@@ -42,11 +42,11 @@ class Project extends Model
 
     public function scopePublished($query)
     {
-        return $query->where('is_published', true);
+        return $query->whereRaw('is_published is true');
     }
 
     public function scopeFeatured($query)
     {
-        return $query->where('is_featured', true);
+        return $query->whereRaw('is_featured is true');
     }
 }

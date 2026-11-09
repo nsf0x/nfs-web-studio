@@ -11,7 +11,7 @@ class LayananController extends Controller
     public function show(string $slug): View|HttpResponse
     {
         $layanan = Service::where('slug', $slug)
-            ->where('is_active', true)
+            ->whereRaw('is_active is true')
             ->with(['packages' => fn ($q) => $q->active()->with('features')])
             ->firstOrFail();
 

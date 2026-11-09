@@ -21,7 +21,7 @@ class PortofolioController extends Controller
     public function show(string $slug): View
     {
         $project = Project::where('slug', $slug)
-            ->where('is_published', true)
+            ->whereRaw('is_published is true')
             ->with(['client', 'service'])
             ->firstOrFail();
 

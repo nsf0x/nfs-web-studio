@@ -32,6 +32,6 @@ class Testimonial extends Model
 
     public function scopePublished($query)
     {
-        return $query->where('is_published', true);
+        return $query->whereRaw('is_published is true');
     }
 }

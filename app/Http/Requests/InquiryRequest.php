@@ -24,14 +24,14 @@ class InquiryRequest extends FormRequest
             'service_id'    => [
                 'nullable',
                 'integer',
-                Rule::exists('services', 'id')->where('is_active', true),
+                Rule::exists('services', 'id')->where(fn ($query) => $query->whereRaw('is_active is true')),
             ],
             'package_id'    => [
                 'nullable',
                 'integer',
                 Rule::exists('packages', 'id')
                     ->where('service_id', $this->input('service_id'))
-                    ->where('is_active', true),
+                    ->where(fn ($query) => $query->whereRaw('is_active is true')),
             ],
             'budget_range'  => ['nullable', 'string', 'max:50'],
             'message'       => ['required', 'string', 'min:10', 'max:5000'],
