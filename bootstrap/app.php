@@ -31,6 +31,8 @@ $app = Application::configure(basePath: dirname(__DIR__))
         });
     })->create();
 
+$app->register(\Illuminate\View\ViewServiceProvider::class);
+
 if (env('VERCEL')) {
     $storagePath = sys_get_temp_dir().'/nfs-web-studio/storage';
 
