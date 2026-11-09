@@ -61,9 +61,25 @@ php artisan migrate:status
 
 Pastikan `APP_DEBUG=false`, gunakan HTTPS, atur kredensial produksi di environment server, dan jangan unggah `.env` atau `node_modules`.
 
+## Environment Vercel
+
+`vercel.env.example` adalah template untuk mengisi Environment Variables di pengaturan proyek Vercel. Project ref `rxnwprsmicroswahizwj` sudah diisi dari URL API Supabase. Ganti `APP_KEY`, `URL_ENCODED_DATABASE_PASSWORD`, dan `POOLER_HOST` menggunakan nilai rahasia dan host dari proyek Supabase Anda. Buat `APP_KEY` unik dengan `php artisan key:generate --show`; jangan commit atau membagikan key tersebut. Gunakan transaction pooler Supabase untuk trafik serverless. Untuk menjalankan migration, gunakan koneksi direct atau session pooler sementara dari mesin deployment/admin; jangan gunakan `migrate:fresh` pada database production.
+
+Aplikasi menggunakan PostgreSQL Supabase untuk database. Jalankan `php artisan migrate --force` terhadap database itu sebelum menerima trafik. `FILESYSTEM_DISK=local` tidak persisten di Vercel; upload logo/thumbnail membutuhkan object storage dan penyesuaian konfigurasi disk aplikasi. `MAIL_MAILER=log` tidak mengirim email; atur SMTP provider jika notifikasi inquiry harus diterima.
+
+Repository ini menggunakan `vercel-php` untuk menjalankan Laravel sebagai PHP Function. Pengaturan proyek Vercel:
+
+1. Framework Preset: **Other**.
+2. Build Command: `npm run build`.
+3. Output Directory: `public`.
+4. Node.js Version: **22.x**.
+5. Tambahkan Environment Variables dari `vercel.env.example` untuk Production, Preview, dan Development sesuai kebutuhan. Jangan mengunggah file `vercel.env`.
+
+`vercel.json` mengirim permintaan yang bukan berkas statis ke `api/index.php`. Laravel memakai direktori sementara `/tmp` untuk data runtime yang dapat ditulis; direktori ini tidak persisten. Migrasi production harus dijalankan secara terpisah setelah kompatibilitas PostgreSQL dan koneksi Supabase dikonfirmasi.
+
 ## Pindah dari Lokal ke Online
 
-1. Siapkan hosting yang mendukung versi PHP dan MySQL/MariaDB di atas, lalu arahkan DNS domain ke hosting.
+1. Siapkan hosting yang mendukung Laravel/PHP dan PostgreSQL, lalu arahkan DNS domain ke hosting.
 2. Atur `APP_URL` ke URL HTTPS domain final, `APP_ENV=production`, `APP_DEBUG=false`, dan konfigurasi database/email produksi.
 3. Jalankan `npm install` dan `npm run build`; unggah kode beserta aset `public/build`.
 4. Migrasikan database dengan `php artisan migrate --force` (atau impor cadangan yang telah disiapkan), lalu buat admin dengan kredensial produksi yang kuat.

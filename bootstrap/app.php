@@ -9,7 +9,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-return Application::configure(basePath: dirname(__DIR__))
+$app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
@@ -30,3 +30,19 @@ return Application::configure(basePath: dirname(__DIR__))
             return response()->view('errors.404', [], 404);
         });
     })->create();
+
+if (env('VERCEL')) {
+    $storagePath = sys_get_temp_dir().'/nfs-web-studio/storage';
+
+    foreach (['app/private', 'app/public', 'framework/cache/data', 'framework/sessions', 'framework/views', 'logs'] as $directory) {
+        $path = $storagePath.'/'.$directory;
+
+        if (! is_dir($path) && ! mkdir($path, 0755, true) && ! is_dir($path)) {
+            throw new RuntimeException("Unable to create Laravel runtime directory: {$path}");
+        }
+    }
+
+    $app->useStoragePath($storagePath);
+}
+
+return $app;
