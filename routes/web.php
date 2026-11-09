@@ -38,20 +38,6 @@ Route::get('/syarat-ketentuan', [HukumController::class, 'syarat'])->name('syara
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
-Route::get('/__runtime-check', function () {
-    $app = app();
-
-    return response()->json([
-        'view_provider_loaded' => $app->getProvider(\Illuminate\View\ViewServiceProvider::class) !== null,
-        'view_bound' => $app->bound('view'),
-        'view_finder_bound' => $app->bound('view.finder'),
-        'view_engine_resolver_bound' => $app->bound('view.engine.resolver'),
-        'filesystem_bound' => $app->bound('files'),
-        'events_bound' => $app->bound('events'),
-        'view_paths_configured' => is_array(config('view.paths')),
-    ]);
-})->name('runtime-check');
-
 // ============================================================
 // ADMIN ROUTES
 // ============================================================
