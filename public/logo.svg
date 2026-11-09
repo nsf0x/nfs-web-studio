@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 310 56" role="img" aria-labelledby="title">
+  <title id="title">NFS Web Studio</title>
+  <text x="0" y="40" fill="#0B1F3A" font-family="Arial,sans-serif" font-size="38" font-weight="800" letter-spacing="-2">NFS</text>
+  <rect x="101" y="13" width="3" height="31" rx="1.5" fill="#C9A227"/>
+  <text x="117" y="37" fill="#0B1F3A" font-family="Arial,sans-serif" font-size="23" font-weight="400">Web Studio</text>
+</svg>
