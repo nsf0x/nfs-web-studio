@@ -38,6 +38,16 @@ Route::get('/syarat-ketentuan', [HukumController::class, 'syarat'])->name('syara
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
+Route::get('/__vercel-diagnostics', fn () => response()->json([
+    'path' => request()->path(),
+    'route' => request()->route()?->uri(),
+    'view' => app()->bound('view'),
+    'view_finder' => app()->bound('view.finder'),
+    'view_engine_resolver' => app()->bound('view.engine.resolver'),
+    'files' => app()->bound('files'),
+    'events' => app()->bound('events'),
+]));
+
 // ============================================================
 // ADMIN ROUTES
 // ============================================================
