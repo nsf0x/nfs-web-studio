@@ -7,7 +7,6 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-use Illuminate\View\ViewServiceProvider;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 $app = Application::configure(basePath: dirname(__DIR__))
@@ -31,8 +30,6 @@ $app = Application::configure(basePath: dirname(__DIR__))
             return response()->view('errors.404', [], 404);
         });
     })->create();
-
-$app->register(ViewServiceProvider::class);
 
 if (env('VERCEL')) {
     $storagePath = sys_get_temp_dir().'/nfs-web-studio/storage';
