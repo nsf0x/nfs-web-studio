@@ -62,8 +62,7 @@
                     <td class="px-5 py-3.5">
                         <div class="flex items-center gap-2 justify-end">
                             <a href="{{ route('admin.clients.edit', $client) }}" class="text-accent hover:text-accent-hover text-xs font-medium">Edit</a>
-                            <form method="POST" action="{{ route('admin.clients.destroy', $client) }}"
-                                  onsubmit="return confirm('Hapus klien {{ $client->name }}?')">
+                            <form method="POST" action="{{ route('admin.clients.destroy', $client) }}">
                                 @csrf @method('DELETE')
                                 <button class="text-red-500 hover:text-red-700 text-xs font-medium">Hapus</button>
                             </form>

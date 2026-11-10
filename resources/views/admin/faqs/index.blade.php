@@ -41,8 +41,7 @@
                     <td class="px-5 py-3.5">
                         <div class="flex items-center gap-2 justify-end">
                             <a href="{{ route('admin.faqs.edit', $faq) }}" class="text-accent hover:text-accent-hover text-xs font-medium">Edit</a>
-                            <form method="POST" action="{{ route('admin.faqs.destroy', $faq) }}"
-                                  onsubmit="return confirm('Hapus FAQ ini?')">
+                            <form method="POST" action="{{ route('admin.faqs.destroy', $faq) }}">
                                 @csrf @method('DELETE')
                                 <button class="text-red-500 hover:text-red-700 text-xs font-medium">Hapus</button>
                             </form>

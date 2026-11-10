@@ -60,8 +60,7 @@
                         <div class="flex items-center gap-2 justify-end">
                             <a href="{{ route('portofolio.show', $project->slug) }}" target="_blank" class="text-gray-400 hover:text-gray-600 text-xs">Lihat</a>
                             <a href="{{ route('admin.projects.edit', $project) }}" class="text-accent hover:text-accent-hover text-xs font-medium">Edit</a>
-                            <form method="POST" action="{{ route('admin.projects.destroy', $project) }}"
-                                  onsubmit="return confirm('Hapus proyek {{ $project->title }}?')">
+                            <form method="POST" action="{{ route('admin.projects.destroy', $project) }}">
                                 @csrf @method('DELETE')
                                 <button class="text-red-500 hover:text-red-700 text-xs font-medium">Hapus</button>
                             </form>

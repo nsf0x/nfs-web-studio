@@ -47,8 +47,7 @@
                 <td class="px-5 py-3.5">
                     <div class="flex items-center gap-3 justify-end">
                         <a href="{{ route('admin.services.edit', $service) }}" class="text-accent text-xs font-medium hover:text-accent-hover">Edit</a>
-                        <form method="POST" action="{{ route('admin.services.destroy', $service) }}"
-                              onsubmit="return confirm('Hapus layanan {{ addslashes($service->name) }}?')">
+                        <form method="POST" action="{{ route('admin.services.destroy', $service) }}">
                             @csrf @method('DELETE')
                             <button type="submit" class="text-red-500 text-xs font-medium hover:text-red-700">Hapus</button>
                         </form>

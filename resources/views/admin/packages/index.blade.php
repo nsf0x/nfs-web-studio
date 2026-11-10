@@ -66,8 +66,7 @@
                 <td class="px-5 py-3.5">
                     <div class="flex items-center gap-3 justify-end">
                         <a href="{{ route('admin.packages.edit', $pkg) }}" class="text-accent text-xs font-medium hover:text-accent-hover">Edit</a>
-                        <form method="POST" action="{{ route('admin.packages.destroy', $pkg) }}"
-                              onsubmit="return confirm('Hapus paket {{ addslashes($pkg->name) }}?')">
+                        <form method="POST" action="{{ route('admin.packages.destroy', $pkg) }}">
                             @csrf @method('DELETE')
                             <button type="submit" class="text-red-500 text-xs font-medium hover:text-red-700">Hapus</button>
                         </form>
