@@ -66,8 +66,6 @@
 
     @include('components.package-detail-modal')
 
-    @include('components.package-detail-modal')
-
     {{-- Footer --}}
     @include('components.footer')
 

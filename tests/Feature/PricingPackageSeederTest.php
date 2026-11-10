@@ -70,13 +70,15 @@ class PricingPackageSeederTest extends TestCase
     {
         $this->seed(PricingPackageSeeder::class);
 
-        $this->get('/layanan/website-company-profile')
+        $response = $this->get('/layanan/website-company-profile')
             ->assertOk()
             ->assertSee('Lihat Detail Paket')
             ->assertSee('show-package-details')
             ->assertSee('x-on:show-package-details.window')
             ->assertSee('Lanjut ke Kontak')
             ->assertSee('Website profil usaha sederhana');
+
+        $this->assertSame(1, substr_count($response->getContent(), 'aria-labelledby="package-detail-title"'));
 
         $package = Package::where('slug', 'company-profile-basic')->firstOrFail();
 
