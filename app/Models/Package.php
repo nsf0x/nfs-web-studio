@@ -9,14 +9,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Package extends Model
 {
     protected $table = 'packages';
+
     public $timestamps = false;
 
     protected $fillable = [
         'service_id',
         'name',
         'slug',
+        'description',
         'price',
         'price_note',
+        'billing_period',
         'delivery_days',
         'revision_count',
         'is_featured',
@@ -25,12 +28,13 @@ class Package extends Model
     ];
 
     protected $casts = [
-        'price'          => 'decimal:2',
-        'is_featured'    => 'boolean',
-        'is_active'      => 'boolean',
-        'delivery_days'  => 'integer',
+        'price' => 'integer',
+        'is_featured' => 'boolean',
+        'is_active' => 'boolean',
+        'billing_period' => 'string',
+        'delivery_days' => 'integer',
         'revision_count' => 'integer',
-        'sort_order'     => 'integer',
+        'sort_order' => 'integer',
     ];
 
     public function service(): BelongsTo

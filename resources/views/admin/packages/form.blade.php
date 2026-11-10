@@ -51,16 +51,34 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="admin-label">Harga (Rp) <span class="text-red-500">*</span></label>
+                        <label class="admin-label">Harga (Rp)</label>
                         <input type="number" name="price" value="{{ old('price', $package->price) }}"
                                class="admin-input @error('price') border-red-400 @enderror"
-                               placeholder="1500000" min="0" required>
+                               placeholder="Kosongkan untuk Hubungi Kami" min="0" step="1">
                         @error('price')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                     </div>
                     <div>
                         <label class="admin-label">Catatan Harga</label>
                         <input type="text" name="price_note" value="{{ old('price_note', $package->price_note) }}"
                                class="admin-input" placeholder="Mulai dari / Per halaman">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="admin-label">Periode Tagihan <span class="text-red-500">*</span></label>
+                        <select name="billing_period" class="admin-input" required>
+                            @foreach(['one_time' => 'Sekali bayar', 'monthly' => 'Bulanan', 'yearly' => 'Tahunan', 'custom' => 'Sesuai penawaran'] as $value => $label)
+                                <option value="{{ $value }}" {{ old('billing_period', $package->billing_period ?? 'one_time') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        @error('billing_period')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <label class="admin-label">Deskripsi Paket</label>
+                        <textarea name="description" rows="2" class="admin-input"
+                                  placeholder="Ringkasan singkat paket">{{ old('description', $package->description) }}</textarea>
+                        @error('description')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                     </div>
                 </div>
 

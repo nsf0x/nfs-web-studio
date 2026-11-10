@@ -12,8 +12,9 @@ class DatabaseSeeder extends Seeder
             SiteSettingSeeder::class,  // 1. Pengaturan brand & kontak
             ClientSeeder::class,       // 2. Klien
             ServiceSeeder::class,      // 3. Layanan
-            PaketDanFaqSeeder::class,  // 4. Paket + fitur + FAQ (butuh services sudah ada)
-            AdminSeeder::class,        // 5. Akun admin
+            PaketDanFaqSeeder::class,    // 4. Paket + fitur + FAQ (butuh services sudah ada)
+            PricingPackageSeeder::class, // 5. Paket semua layanan
+            AdminSeeder::class,          // 6. Akun admin
         ]);
     }
 }

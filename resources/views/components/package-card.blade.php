@@ -6,18 +6,28 @@
 
     <div class="mb-5">
         <h3 class="mb-1 text-xl font-bold">{{ $package->name }}</h3>
+        @if($package->description)
+            <p class="{{ $package->is_featured ? 'text-gray-300' : 'text-gray-500' }} text-sm">{{ $package->description }}</p>
+        @endif
         @if($package->price > 0 && $package->price_note)
             <p class="{{ $package->is_featured ? 'text-gray-300' : 'text-gray-500' }} text-sm">{{ $package->price_note }}</p>
         @endif
     </div>
 
     <div class="mb-5">
-        @if($package->price > 0)
+        @if($package->price !== null && $package->price > 0)
             <span class="text-3xl font-extrabold {{ $package->is_featured ? 'text-gold' : 'text-navy-900' }}">
                 Rp{{ number_format((float) $package->price, 0, ',', '.') }}
             </span>
+        @elseif($package->price === null)
+            <span class="text-lg font-bold {{ $package->is_featured ? 'text-gold' : 'text-navy-900' }}">Hubungi Kami</span>
         @else
             <span class="text-lg font-bold {{ $package->is_featured ? 'text-gold' : 'text-navy-900' }}">Hubungi kami untuk penawaran</span>
+        @endif
+        @if($package->billing_period === 'monthly')
+            <span class="text-sm {{ $package->is_featured ? 'text-gray-300' : 'text-gray-500' }}">per bulan</span>
+        @elseif($package->billing_period === 'yearly')
+            <span class="text-sm {{ $package->is_featured ? 'text-gray-300' : 'text-gray-500' }}">per tahun</span>
         @endif
         <div class="mt-2 flex gap-4 text-sm {{ $package->is_featured ? 'text-gray-300' : 'text-gray-500' }}">
             @if($package->delivery_days)

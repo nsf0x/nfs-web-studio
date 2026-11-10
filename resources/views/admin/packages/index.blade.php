@@ -44,8 +44,14 @@
                     <div class="text-xs text-gray-400 font-mono">{{ $pkg->slug }}</div>
                 </td>
                 <td class="px-5 py-3.5">
-                    <div class="font-semibold">Rp{{ number_format((float)$pkg->price, 0, ',', '.') }}</div>
+                    @if($pkg->price !== null && $pkg->price > 0)
+                        <div class="font-semibold">Rp{{ number_format((float)$pkg->price, 0, ',', '.') }}</div>
+                    @else
+                        <div class="font-semibold">Hubungi Kami</div>
+                    @endif
                     @if($pkg->price_note)<div class="text-xs text-gray-400">{{ $pkg->price_note }}</div>@endif
+                    @if($pkg->billing_period === 'monthly')<div class="text-xs text-gray-400">per bulan</div>@endif
+                    @if($pkg->billing_period === 'yearly')<div class="text-xs text-gray-400">per tahun</div>@endif
                 </td>
                 <td class="px-5 py-3.5 text-gray-500 text-xs">
                     @if($pkg->delivery_days){{ $pkg->delivery_days }} hari @endif

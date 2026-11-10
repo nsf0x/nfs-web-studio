@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class PackageController extends Controller
@@ -17,13 +18,15 @@ class PackageController extends Controller
     public function index(): View
     {
         $services = Service::with(['packages' => fn ($q) => $q->orderBy('sort_order')])->orderBy('sort_order')->get();
+
         return view('admin.packages.index', compact('services'));
     }
 
     public function create(): View
     {
         $services = Service::active()->get();
-        return view('admin.packages.form', ['package' => new Package(), 'services' => $services]);
+
+        return view('admin.packages.form', ['package' => new Package, 'services' => $services]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -44,6 +47,7 @@ class PackageController extends Controller
     {
         $services = Service::active()->get();
         $package->load('features');
+
         return view('admin.packages.form', compact('package', 'services'));
     }
 
@@ -64,35 +68,40 @@ class PackageController extends Controller
     public function destroy(Package $package): RedirectResponse
     {
         $package->delete();
+
         return redirect()->route('admin.packages.index')->with('success', 'Paket berhasil dihapus.');
     }
 
     private function validatePackage(Request $request, ?Package $package = null): array
     {
         $request->merge(['slug' => Str::slug((string) $request->input('slug', ''))]);
-        $slugRule = 'unique:packages,slug' . ($package ? ",{$package->id}" : '');
+        $slugRule = 'unique:packages,slug'.($package ? ",{$package->id}" : '');
         $data = $request->validate([
-            'service_id'     => ['required', 'exists:services,id'],
-            'name'           => ['required', 'string', 'max:100'],
-            'slug'           => ['required', 'string', 'max:120', $slugRule],
-            'price'          => ['required', 'numeric', 'min:0'],
-            'price_note'     => ['nullable', 'string', 'max:100'],
-            'delivery_days'  => ['nullable', 'integer', 'min:1'],
+            'service_id' => ['required', 'exists:services,id'],
+            'name' => ['required', 'string', 'max:100'],
+            'slug' => ['required', 'string', 'max:120', $slugRule],
+            'price' => ['nullable', 'integer', 'min:0'],
+            'price_note' => ['nullable', 'string', 'max:100'],
+            'description' => ['nullable', 'string'],
+            'billing_period' => ['required', Rule::in(['one_time', 'monthly', 'yearly', 'custom'])],
+            'delivery_days' => ['nullable', 'integer', 'min:1'],
             'revision_count' => ['nullable', 'integer', 'min:0'],
-            'is_featured'    => ['boolean'],
-            'is_active'      => ['boolean'],
-            'sort_order'     => ['nullable', 'integer'],
-            'features'       => ['nullable', 'array'],
-            'features.*'     => ['nullable', 'string', 'max:255'],
+            'is_featured' => ['boolean'],
+            'is_active' => ['boolean'],
+            'sort_order' => ['nullable', 'integer'],
+            'features' => ['nullable', 'array'],
+            'features.*' => ['nullable', 'string', 'max:255'],
         ]);
         $data['is_featured'] = $request->boolean('is_featured');
-        $data['is_active']   = $request->boolean('is_active');
+        $data['is_active'] = $request->boolean('is_active');
+
         return $data;
     }
 
     private function extractFeatures(Request $request): array
     {
         $features = $request->input('features', []) ?? [];
+
         return array_values(array_filter(array_map('trim', $features), fn ($feature) => $feature !== ''));
     }
 
@@ -102,7 +111,7 @@ class PackageController extends Controller
         foreach ($features as $i => $feature) {
             PackageFeature::create([
                 'package_id' => $package->id,
-                'feature'    => $feature,
+                'feature' => $feature,
                 'sort_order' => $i + 1,
             ]);
         }
