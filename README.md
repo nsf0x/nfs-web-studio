@@ -45,7 +45,7 @@ Untuk membuat ulang database lokal dari awal, gunakan `php artisan migrate:fresh
 - Email dan password admin diambil dari `ADMIN_SEED_EMAIL` dan `ADMIN_SEED_PASSWORD` pada `.env`.
 - Ganti password seed lokal dengan nilai kuat sebelum menjalankan seeder dan jangan menggunakan kredensial lokal untuk produksi.
 - Panel menyediakan pengelolaan layanan, paket beserta fiturnya, klien, proyek, testimoni, FAQ, pengaturan situs, dan inquiry.
-- Berkas logo serta thumbnail disimpan pada storage publik; jalankan `php artisan storage:link`.
+- Berkas logo yang diunggah lewat admin disimpan permanen di bucket publik Supabase Storage. Thumbnail proyek masih menggunakan storage publik Laravel.
 
 ## Email Formulir Kontak
 
@@ -65,7 +65,15 @@ Pastikan `APP_DEBUG=false`, gunakan HTTPS, atur kredensial produksi di environme
 
 `vercel.env.example` adalah template untuk mengisi Environment Variables di pengaturan proyek Vercel. Project ref `rxnwprsmicroswahizwj` sudah diisi dari URL API Supabase. Ganti `APP_KEY`, `URL_ENCODED_DATABASE_PASSWORD`, dan `POOLER_HOST` menggunakan nilai rahasia dan host dari proyek Supabase Anda. Buat `APP_KEY` unik dengan `php artisan key:generate --show`; jangan commit atau membagikan key tersebut. Gunakan transaction pooler Supabase untuk trafik serverless. Untuk menjalankan migration, gunakan koneksi direct atau session pooler sementara dari mesin deployment/admin; jangan gunakan `migrate:fresh` pada database production.
 
-Aplikasi menggunakan PostgreSQL Supabase untuk database. Jalankan `php artisan migrate --force` terhadap database itu sebelum menerima trafik. `FILESYSTEM_DISK=local` tidak persisten di Vercel; upload logo/thumbnail membutuhkan object storage dan penyesuaian konfigurasi disk aplikasi. `MAIL_MAILER=log` tidak mengirim email; atur SMTP provider jika notifikasi inquiry harus diterima.
+Aplikasi menggunakan PostgreSQL Supabase untuk database. Jalankan `php artisan migrate --force` terhadap database itu sebelum menerima trafik. `FILESYSTEM_DISK=local` tidak persisten di Vercel; upload thumbnail proyek membutuhkan object storage. `MAIL_MAILER=log` tidak mengirim email; atur SMTP provider jika notifikasi inquiry harus diterima.
+
+Untuk upload logo klien:
+
+1. Buat bucket **public** bernama `client-logos` di Supabase Dashboard → Storage.
+2. Atur `SUPABASE_URL`, `SUPABASE_STORAGE_BUCKET=client-logos`, dan `SUPABASE_SERVICE_ROLE_KEY` di environment Vercel. `SUPABASE_URL` berbentuk `https://<project-ref>.supabase.co`.
+3. Ambil service role key dari Supabase Dashboard → Project Settings → API Keys. Simpan hanya sebagai environment variable server-side; jangan commit atau tampilkan nilainya.
+
+Upload di panel admin mengirim file ke bucket menggunakan service role key, menyimpan public URL ke database, dan menghapus file lama dari bucket saat logo diganti. Jika upload dan URL logo sama-sama diisi, file upload yang dipakai. Logo Kaizen yang dilampirkan tersedia sebagai `public/images/clients/kaizen-kreasi-indonesia.png`.
 
 Repository ini menggunakan `vercel-php` untuk menjalankan Laravel sebagai PHP Function. Pengaturan proyek Vercel:
 

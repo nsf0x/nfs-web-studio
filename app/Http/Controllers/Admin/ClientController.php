@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
+use App\Services\SupabaseStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use RuntimeException;
 
 class ClientController extends Controller
 {
@@ -28,7 +28,7 @@ class ClientController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $this->validateClient($request);
-        $data = $this->handleLogoUpload($request, $data);
+        $data = $this->handleLogoUpload($request, $data, app(SupabaseStorage::class));
         Client::create($data);
 
         return redirect()->route('admin.clients.index')->with('success', 'Klien berhasil ditambahkan.');
@@ -42,17 +42,17 @@ class ClientController extends Controller
     public function update(Request $request, Client $client): RedirectResponse
     {
         $data = $this->validateClient($request, $client);
-        $data = $this->handleLogoUpload($request, $data, $client);
+        $oldLogoUrl = $client->logo_url;
+        $data = $this->handleLogoUpload($request, $data, app(SupabaseStorage::class));
         $client->update($data);
+        $this->deleteReplacedLogo($oldLogoUrl, $client->logo_url, app(SupabaseStorage::class));
 
         return redirect()->route('admin.clients.index')->with('success', 'Klien berhasil diperbarui.');
     }
 
     public function destroy(Client $client): RedirectResponse
     {
-        if ($client->logo_url && ! $this->isExternalUrl($client->logo_url)) {
-            Storage::disk('public')->delete($client->logo_url);
-        }
+        $this->deleteLogo($client->logo_url, app(SupabaseStorage::class));
         $client->delete();
 
         return redirect()->route('admin.clients.index')->with('success', 'Klien berhasil dihapus.');
@@ -65,8 +65,8 @@ class ClientController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:150'],
             'slug' => ['required', 'string', 'max:150', $slugRule],
-            'logo_url' => ['nullable', 'url', 'max:2048'],
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'logo_url' => ['nullable', 'url', 'max:2048'],
             'website_url' => ['nullable', 'url', 'max:255'],
             'industry' => ['nullable', 'string', 'max:100'],
             'is_active' => ['boolean'],
@@ -77,24 +77,12 @@ class ClientController extends Controller
         return $data;
     }
 
-    private function handleLogoUpload(Request $request, array $data, ?Client $client = null): array
+    private function handleLogoUpload(Request $request, array $data, SupabaseStorage $storage): array
     {
         if ($request->hasFile('logo')) {
-            $logoPath = $request->file('logo')->store('clients', 'public');
-            if ($logoPath === false) {
-                throw new RuntimeException('Unable to store the uploaded client logo.');
-            }
-            if ($client?->logo_url && ! $this->isExternalUrl($client->logo_url)) {
-                Storage::disk('public')->delete($client->logo_url);
-            }
-            $data['logo_url'] = $logoPath;
-        } elseif (
-            $client?->logo_url
-            && array_key_exists('logo_url', $data)
-            && $client->logo_url !== $data['logo_url']
-            && ! $this->isExternalUrl($client->logo_url)
-        ) {
-            Storage::disk('public')->delete($client->logo_url);
+            $data['logo_url'] = $storage->upload($request->file('logo'), 'clients');
+        } elseif (! $request->filled('logo_url')) {
+            unset($data['logo_url']);
         }
 
         unset($data['logo']);
@@ -102,8 +90,27 @@ class ClientController extends Controller
         return $data;
     }
 
-    private function isExternalUrl(string $url): bool
+    private function deleteReplacedLogo(?string $oldUrl, ?string $newUrl, SupabaseStorage $storage): void
     {
-        return str_starts_with($url, 'https://') || str_starts_with($url, 'http://');
+        if ($oldUrl && $oldUrl !== $newUrl) {
+            $this->deleteLogo($oldUrl, $storage);
+        }
+    }
+
+    private function deleteLogo(?string $url, SupabaseStorage $storage): void
+    {
+        if (! $url) {
+            return;
+        }
+
+        if ($storage->manages($url)) {
+            $storage->delete($url);
+
+            return;
+        }
+
+        if (! str_starts_with($url, 'http://') && ! str_starts_with($url, 'https://')) {
+            Storage::disk('public')->delete($url);
+        }
     }
 }

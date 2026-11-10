@@ -47,19 +47,21 @@
                             <p class="text-xs text-gray-400 mt-1">Logo saat ini. Ganti URL atau pilih file baru untuk menggantinya.</p>
                         </div>
                     @endif
-                    <label class="admin-label" for="logo_url">URL Gambar Logo</label>
-                    <input type="url" id="logo_url" name="logo_url" value="{{ old('logo_url', $client->logo_url && (str_starts_with($client->logo_url, 'http://') || str_starts_with($client->logo_url, 'https://')) ? $client->logo_url : '') }}"
+                    <label class="admin-label" for="logo">Upload Logo</label>
+                    <input type="file" id="logo" name="logo" accept="image/jpeg,image/png,image/webp"
+                           class="admin-input @error('logo') border-red-400 @enderror">
+                    @error('logo')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    <p class="text-xs text-gray-400 mt-1">JPG, PNG, atau WebP. Maksimal 2 MB. File disimpan permanen di Supabase Storage.</p>
+                    @if(! config('services.supabase.url') || ! config('services.supabase.service_role_key'))
+                        <p class="mt-2 text-xs text-amber-700">Upload belum siap. Atur kredensial Supabase Storage di Environment Variables Vercel.</p>
+                    @endif
+
+                    <label class="admin-label mt-3" for="logo_url">Atau URL Gambar Logo</label>
+                    <input type="url" id="logo_url" name="logo_url" value="{{ old('logo_url', $client->logo_url && (str_starts_with($client->logo_url, 'http://') || str_starts_with($client->logo_url, 'https://')) && ! str_contains($client->logo_url, '/storage/v1/object/public/') ? $client->logo_url : '') }}"
                            class="admin-input @error('logo_url') border-red-400 @enderror"
                            placeholder="https://contoh.com/logo.png">
                     @error('logo_url')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
-                    <p class="text-xs text-gray-400 mt-1">Gunakan URL langsung ke file gambar publik (JPG, PNG, atau WebP).</p>
-
-                    @if(env('VERCEL'))
-                        <p class="mt-2 text-xs text-amber-700">Upload file belum tersimpan permanen di Vercel. Gunakan URL gambar publik di atas.</p>
-                    @else
-                        <input type="file" name="logo" accept="image/jpeg,image/png,image/webp" class="admin-input @error('logo') border-red-400 @enderror">
-                        <p class="text-xs text-gray-400 mt-1">JPG, PNG, WebP. Maks 2MB. Jika mengisi URL dan upload sekaligus, file upload dipakai.</p>
-                    @endif
+                    <p class="text-xs text-gray-400 mt-1">Upload file di atas menggantikan URL jika keduanya diisi.</p>
                 </div>
 
                 <div>
