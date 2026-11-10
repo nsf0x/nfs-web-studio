@@ -34,4 +34,30 @@ class AdminAuthenticationTest extends TestCase
         $this->post('/admin/logout')->assertRedirect(route('admin.login'));
         $this->assertGuest('admin');
     }
+
+    public function test_admin_lists_use_the_styled_delete_confirmation_modal(): void
+    {
+        $admin = Admin::create([
+            'name' => 'Test Administrator',
+            'email' => 'admin@example.test',
+            'password_hash' => Hash::make(Str::random(32)),
+        ]);
+
+        $this->actingAs($admin, 'admin');
+
+        foreach ([
+            '/admin/clients',
+            '/admin/faqs',
+            '/admin/packages',
+            '/admin/projects',
+            '/admin/services',
+            '/admin/testimonials',
+        ] as $path) {
+            $this->get($path)
+                ->assertOk()
+                ->assertSee('Hapus data ini?')
+                ->assertSee('Ya, Hapus')
+                ->assertSee('confirm-delete');
+        }
+    }
 }

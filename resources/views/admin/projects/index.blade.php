@@ -62,7 +62,10 @@
                             <a href="{{ route('admin.projects.edit', $project) }}" class="text-accent hover:text-accent-hover text-xs font-medium">Edit</a>
                             <form method="POST" action="{{ route('admin.projects.destroy', $project) }}">
                                 @csrf @method('DELETE')
-                                <button class="text-red-500 hover:text-red-700 text-xs font-medium">Hapus</button>
+                                <button type="button"
+                                        @click="$dispatch('confirm-delete', { action: $el.form.action, name: $el.dataset.deleteName })"
+                                        data-delete-name="{{ $project->title }}"
+                                        class="text-red-500 hover:text-red-700 text-xs font-medium">Hapus</button>
                             </form>
                         </div>
                     </td>

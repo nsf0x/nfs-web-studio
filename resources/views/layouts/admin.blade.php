@@ -7,7 +7,10 @@
     <title>@yield('title', 'Dashboard') – Admin NFS Web Studio</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans antialiased bg-gray-100" x-data="{ sidebarOpen: window.innerWidth >= 1024 }">
+<body class="font-sans antialiased bg-gray-100"
+      x-data="{ sidebarOpen: window.innerWidth >= 1024, deleteModalOpen: false, deleteAction: '', deleteName: '' }"
+      @confirm-delete.window="deleteAction = $event.detail.action; deleteName = $event.detail.name; deleteModalOpen = true"
+      @keydown.escape.window="deleteModalOpen = false">
 
 <div class="flex h-screen overflow-hidden">
 
@@ -96,6 +99,8 @@
         </main>
     </div>
 </div>
+
+@include('admin.components.delete-confirmation')
 
 @stack('scripts')
 </body>

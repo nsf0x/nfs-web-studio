@@ -49,7 +49,10 @@
                         <a href="{{ route('admin.services.edit', $service) }}" class="text-accent text-xs font-medium hover:text-accent-hover">Edit</a>
                         <form method="POST" action="{{ route('admin.services.destroy', $service) }}">
                             @csrf @method('DELETE')
-                            <button type="submit" class="text-red-500 text-xs font-medium hover:text-red-700">Hapus</button>
+                            <button type="button"
+                                    @click="$dispatch('confirm-delete', { action: $el.form.action, name: $el.dataset.deleteName })"
+                                    data-delete-name="{{ $service->name }}"
+                                    class="text-red-500 text-xs font-medium hover:text-red-700">Hapus</button>
                         </form>
                     </div>
                 </td>

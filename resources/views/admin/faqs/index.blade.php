@@ -43,7 +43,10 @@
                             <a href="{{ route('admin.faqs.edit', $faq) }}" class="text-accent hover:text-accent-hover text-xs font-medium">Edit</a>
                             <form method="POST" action="{{ route('admin.faqs.destroy', $faq) }}">
                                 @csrf @method('DELETE')
-                                <button class="text-red-500 hover:text-red-700 text-xs font-medium">Hapus</button>
+                                <button type="button"
+                                        @click="$dispatch('confirm-delete', { action: $el.form.action, name: $el.dataset.deleteName })"
+                                        data-delete-name="{{ $faq->question }}"
+                                        class="text-red-500 hover:text-red-700 text-xs font-medium">Hapus</button>
                             </form>
                         </div>
                     </td>
