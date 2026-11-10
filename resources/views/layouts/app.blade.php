@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
       x-data="{ packageDetails: null }"
-      @show-package-details.window="packageDetails = $event.detail"
-      @keydown.escape.window="packageDetails = null">
+      x-on:show-package-details.window="packageDetails = $event.detail"
+      x-on:keydown.escape.window="packageDetails = null">
 <head>
     @php
         $pageTitle = trim($__env->yieldContent('title'));

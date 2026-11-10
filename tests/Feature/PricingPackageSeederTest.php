@@ -74,6 +74,7 @@ class PricingPackageSeederTest extends TestCase
             ->assertOk()
             ->assertSee('Lihat Detail Paket')
             ->assertSee('show-package-details')
+            ->assertSee('x-on:show-package-details.window')
             ->assertSee('Lanjut ke Kontak')
             ->assertSee('Website profil usaha sederhana');
 
