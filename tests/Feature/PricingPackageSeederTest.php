@@ -31,6 +31,10 @@ class PricingPackageSeederTest extends TestCase
         $this->assertSame(3, Package::whereHas('service', fn ($query) => $query->where('slug', 'website-toko-online'))->count());
         $this->assertSame(3, Package::whereHas('service', fn ($query) => $query->where('slug', 'sistem-informasi-custom'))->count());
         $this->assertSame(4, Package::whereHas('service', fn ($query) => $query->where('slug', 'redesign-maintenance'))->count());
+        $this->assertSame(1500000, Package::where('slug', 'company-profile-basic')->firstOrFail()->price);
+        $this->assertSame(3500000, Package::where('slug', 'toko-online-basic')->firstOrFail()->price);
+        $this->assertSame(7500000, Package::where('slug', 'si-starter')->firstOrFail()->price);
+        $this->assertNull(Package::where('slug', 'si-enterprise')->firstOrFail()->price);
 
         $legacyPackage = Package::where('slug', 'company-profile-business')->firstOrFail();
         $legacyPackage->price = 2750000;
@@ -47,15 +51,39 @@ class PricingPackageSeederTest extends TestCase
         $this->assertSame(8, $newPackage->fresh()->features()->count());
     }
 
-    public function test_packages_without_prices_display_contact_label_and_billing_period(): void
+    public function test_custom_and_recurring_package_prices_display_correctly(): void
     {
         $this->seed(PricingPackageSeeder::class);
 
         $this->get('/layanan/redesign-maintenance')
             ->assertOk()
-            ->assertSee('Hubungi Kami')
+            ->assertSee('Lihat Detail Paket')
             ->assertSee('per bulan')
             ->assertSee('per tahun');
+
+        $this->get('/layanan/sistem-informasi-custom')
+            ->assertOk()
+            ->assertSee('Harga sesuai ruang lingkup');
+    }
+
+    public function test_package_selection_opens_a_detail_summary_before_contact(): void
+    {
+        $this->seed(PricingPackageSeeder::class);
+
+        $this->get('/layanan/website-company-profile')
+            ->assertOk()
+            ->assertSee('Lihat Detail Paket')
+            ->assertSee('show-package-details')
+            ->assertSee('Lanjut ke Kontak')
+            ->assertSee('Website profil usaha sederhana');
+
+        $package = Package::where('slug', 'company-profile-basic')->firstOrFail();
+
+        $this->get('/kontak?layanan=' . $package->service_id . '&paket=' . $package->id)
+            ->assertOk()
+            ->assertSee('Paket yang Diminati')
+            ->assertSee('Lanjutkan konsultasi via WhatsApp')
+            ->assertSee($package->name);
     }
 
     public function test_it_matches_existing_packages_by_category_and_name_without_creating_duplicates(): void

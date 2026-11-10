@@ -12,19 +12,19 @@ use RuntimeException;
 class PricingPackageSeeder extends Seeder
 {
     private array $prices = [
-        'company-profile-basic' => null, // TODO: isi harga
-        'company-profile-business' => null, // TODO: isi harga
-        'company-profile-premium' => null, // TODO: isi harga
-        'toko-online-basic' => null, // TODO: isi harga
-        'toko-online-business' => null, // TODO: isi harga
-        'toko-online-premium' => null, // TODO: isi harga
-        'si-starter' => null, // TODO: isi harga
-        'si-business' => null, // TODO: isi harga
+        'company-profile-basic' => 1500000,
+        'company-profile-business' => 3500000,
+        'company-profile-premium' => 6000000,
+        'toko-online-basic' => 3500000,
+        'toko-online-business' => 6500000,
+        'toko-online-premium' => 10000000,
+        'si-starter' => 7500000,
+        'si-business' => 15000000,
         'si-enterprise' => null, // TODO: isi harga
-        'rd-basic' => null, // TODO: isi harga
-        'rd-pro' => null, // TODO: isi harga
-        'mt-monthly' => null, // TODO: isi harga
-        'mt-yearly' => null, // TODO: isi harga
+        'rd-basic' => 1500000,
+        'rd-pro' => 3000000,
+        'mt-monthly' => 350000,
+        'mt-yearly' => 3500000,
     ];
 
     public function run(): void
@@ -49,7 +49,7 @@ class PricingPackageSeeder extends Seeder
                 [
                     'name' => 'Basic',
                     'slug' => 'company-profile-basic',
-                    'description' => null,
+                    'description' => 'Website profil usaha sederhana untuk memperkenalkan bisnis secara profesional.',
                     'billing_period' => 'one_time',
                     'delivery_days' => 7,
                     'revision_count' => 2,
@@ -66,7 +66,7 @@ class PricingPackageSeeder extends Seeder
                 [
                     'name' => 'Business',
                     'slug' => 'company-profile-business',
-                    'description' => null,
+                    'description' => 'Website profil bisnis dengan panel admin dan konten yang mudah dikelola.',
                     'billing_period' => 'one_time',
                     'delivery_days' => 14,
                     'revision_count' => 3,
@@ -84,7 +84,7 @@ class PricingPackageSeeder extends Seeder
                 [
                     'name' => 'Premium',
                     'slug' => 'company-profile-premium',
-                    'description' => null,
+                    'description' => 'Website company profile kustom dengan halaman dan dukungan yang lebih lengkap.',
                     'billing_period' => 'one_time',
                     'delivery_days' => 21,
                     'revision_count' => 5,
@@ -105,7 +105,7 @@ class PricingPackageSeeder extends Seeder
                 [
                     'name' => 'Basic',
                     'slug' => 'toko-online-basic',
-                    'description' => null,
+                    'description' => 'Toko online praktis untuk mulai menampilkan produk dan menerima pesanan lewat WhatsApp.',
                     'billing_period' => 'one_time',
                     'delivery_days' => 14,
                     'revision_count' => 2,
@@ -121,7 +121,7 @@ class PricingPackageSeeder extends Seeder
                 [
                     'name' => 'Business',
                     'slug' => 'toko-online-business',
-                    'description' => null,
+                    'description' => 'Toko online dengan pengelolaan pesanan, stok, dan opsi pembayaran yang lebih lengkap.',
                     'billing_period' => 'one_time',
                     'delivery_days' => 21,
                     'revision_count' => 3,
@@ -138,7 +138,7 @@ class PricingPackageSeeder extends Seeder
                 [
                     'name' => 'Premium',
                     'slug' => 'toko-online-premium',
-                    'description' => null,
+                    'description' => 'Toko online kustom untuk bisnis yang membutuhkan fitur dan integrasi tambahan.',
                     'billing_period' => 'one_time',
                     'delivery_days' => 30,
                     'revision_count' => 5,
@@ -325,7 +325,7 @@ class PricingPackageSeeder extends Seeder
                     ]
                 );
 
-                if ($price === null && $this->prices[$data['slug']] !== null) {
+                if (($price === null || $price === 0) && $this->prices[$data['slug']] !== null) {
                     $package->price = $this->prices[$data['slug']];
                     $package->save();
                 }

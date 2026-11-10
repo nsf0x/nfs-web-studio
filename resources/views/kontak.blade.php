@@ -15,6 +15,21 @@
         (string) $service->id => $service->packages->map(fn ($package) => [
             'id' => $package->id,
             'name' => $package->name,
+            'serviceName' => $service->name,
+            'description' => $package->description ?: 'Paket pembuatan website yang disesuaikan dengan kebutuhan bisnis Anda.',
+            'price' => $package->price !== null && $package->price > 0
+                ? 'Rp' . number_format((float) $package->price, 0, ',', '.')
+                : 'Harga dibahas melalui WhatsApp',
+            'billingPeriod' => match ($package->billing_period) {
+                'monthly' => 'per bulan',
+                'yearly' => 'per tahun',
+                default => 'sekali bayar',
+            },
+            'features' => $package->features->pluck('feature')->values(),
+            'whatsappUrl' => 'https://wa.me/' . preg_replace('/[^0-9]/', '', $wa) . '?text=' . urlencode(
+                'Halo NFS Web Studio, saya ingin berkonsultasi tentang layanan '
+                . $service->name . ' dan paket ' . $package->name . '.'
+            ),
         ])->values(),
     ]);
 @endphp
@@ -157,7 +172,11 @@
                             <div x-data="{
                                 selectedService: @js($selectedService),
                                 selectedPackage: @js($selectedPackage),
-                                packageGroups: @js($packageGroups)
+                                packageGroups: @js($packageGroups),
+                                selectedPackageInfo() {
+                                    return (this.packageGroups[this.selectedService] || [])
+                                        .find(package => String(package.id) === String(this.selectedPackage));
+                                }
                             }">
                                 <label for="service_id" class="form-label">Layanan yang Diminati</label>
                                 <select id="service_id" name="service_id"
@@ -182,6 +201,37 @@
                                     </template>
                                 </select>
                                 @error('package_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+
+                                <div x-cloak x-show="selectedPackageInfo()"
+                                     class="mt-5 rounded-xl border border-blue-100 bg-blue-50 p-5">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-accent"
+                                       x-text="selectedPackageInfo()?.serviceName"></p>
+                                    <div class="mt-1 flex flex-wrap items-baseline justify-between gap-2">
+                                        <h3 class="font-bold text-navy-900" x-text="selectedPackageInfo()?.name"></h3>
+                                        <p class="font-bold text-navy-900">
+                                            <span x-text="selectedPackageInfo()?.price"></span>
+                                            <span class="text-xs font-normal text-gray-500" x-text="selectedPackageInfo()?.billingPeriod"></span>
+                                        </p>
+                                    </div>
+                                    <p class="mt-2 text-sm leading-6 text-gray-600" x-text="selectedPackageInfo()?.description"></p>
+                                    <p class="mt-2 text-xs leading-5 text-gray-500">
+                                        Detail kebutuhan dan transaksi dilanjutkan melalui WhatsApp.
+                                    </p>
+                                    <ul class="mt-3 space-y-1.5">
+                                        <template x-for="feature in (selectedPackageInfo()?.features || [])" :key="feature">
+                                            <li class="flex gap-2 text-xs text-gray-600">
+                                                <span class="text-green-600" aria-hidden="true">✓</span>
+                                                <span x-text="feature"></span>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                    <a :href="selectedPackageInfo()?.whatsappUrl"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       class="btn-wa mt-5 w-full justify-center text-sm">
+                                        Lanjutkan konsultasi via WhatsApp
+                                    </a>
+                                </div>
                             </div>
 
                             {{-- Budget --}}

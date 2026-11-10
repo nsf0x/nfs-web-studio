@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+      x-data="{ packageDetails: null }"
+      @show-package-details.window="packageDetails = $event.detail"
+      @keydown.escape.window="packageDetails = null">
 <head>
     @php
         $pageTitle = trim($__env->yieldContent('title'));
@@ -60,6 +63,10 @@
     <main>
         @yield('content')
     </main>
+
+    @include('components.package-detail-modal')
+
+    @include('components.package-detail-modal')
 
     {{-- Footer --}}
     @include('components.footer')

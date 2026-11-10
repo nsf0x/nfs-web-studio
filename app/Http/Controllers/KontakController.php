@@ -16,7 +16,7 @@ class KontakController extends Controller
     public function index(): View
     {
         $services = Service::active()
-            ->with(['packages' => fn ($q) => $q->active()])
+            ->with(['packages' => fn ($q) => $q->active(), 'packages.features'])
             ->get();
 
         return view('kontak', compact('services'));

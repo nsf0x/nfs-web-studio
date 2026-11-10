@@ -19,10 +19,8 @@
             <span class="text-3xl font-extrabold {{ $package->is_featured ? 'text-gold' : 'text-navy-900' }}">
                 Rp{{ number_format((float) $package->price, 0, ',', '.') }}
             </span>
-        @elseif($package->price === null)
-            <span class="text-lg font-bold {{ $package->is_featured ? 'text-gold' : 'text-navy-900' }}">Hubungi Kami</span>
         @else
-            <span class="text-lg font-bold {{ $package->is_featured ? 'text-gold' : 'text-navy-900' }}">Hubungi kami untuk penawaran</span>
+            <span class="text-lg font-bold {{ $package->is_featured ? 'text-gold' : 'text-navy-900' }}">Harga sesuai ruang lingkup</span>
         @endif
         @if($package->billing_period === 'monthly')
             <span class="text-sm {{ $package->is_featured ? 'text-gray-300' : 'text-gray-500' }}">per bulan</span>
@@ -48,9 +46,24 @@
         @endforeach
     </ul>
 
-    <a href="{{ route('kontak') }}?layanan={{ $service->id }}&paket={{ $package->id }}"
+    <button type="button"
+       @click="$dispatch('show-package-details', @js([
+           'name' => $package->name,
+           'serviceName' => $service->name,
+           'description' => $package->description ?: 'Paket pembuatan website yang disesuaikan dengan kebutuhan bisnis Anda.',
+           'price' => $package->price !== null && $package->price > 0 ? 'Rp' . number_format((float) $package->price, 0, ',', '.') : 'Harga dibahas sesuai ruang lingkup',
+           'billingPeriod' => match ($package->billing_period) {
+               'monthly' => 'per bulan',
+               'yearly' => 'per tahun',
+               default => 'sekali bayar',
+           },
+           'deliveryDays' => $package->delivery_days ? $package->delivery_days . ' hari pengerjaan' : null,
+           'revisionCount' => $package->revision_count !== null ? $package->revision_count . 'x revisi' : null,
+           'features' => $package->features->pluck('feature')->values(),
+           'contactUrl' => route('kontak') . '?layanan=' . $service->id . '&paket=' . $package->id,
+       ]))"
        class="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-center font-semibold shadow-md transition-all duration-200 hover:shadow-hover
               {{ $package->is_featured ? 'bg-gold text-navy-900 hover:bg-gold-light' : 'btn-primary' }}">
-        Pilih Paket Ini
-    </a>
+        Lihat Detail Paket
+    </button>
 </article>
