@@ -42,13 +42,24 @@
                     <label class="admin-label">Logo Klien</label>
                     @if(isset($client->id) && $client->logo_url)
                         <div class="mb-2">
-                            <img src="{{ str_starts_with($client->logo_url, 'http') ? $client->logo_url : Storage::url($client->logo_url) }}"
+                            <img src="{{ str_starts_with($client->logo_url, 'http://') || str_starts_with($client->logo_url, 'https://') ? $client->logo_url : Storage::url($client->logo_url) }}"
                                  alt="Logo saat ini" class="h-12 object-contain">
-                            <p class="text-xs text-gray-400 mt-1">Logo saat ini. Upload baru untuk mengganti.</p>
+                            <p class="text-xs text-gray-400 mt-1">Logo saat ini. Ganti URL atau pilih file baru untuk menggantinya.</p>
                         </div>
                     @endif
-                    <input type="file" name="logo" accept="image/*" class="admin-input @error('logo') border-red-400 @enderror">
-                    <p class="text-xs text-gray-400 mt-1">JPG, PNG, WebP, SVG. Maks 2MB.</p>
+                    <label class="admin-label" for="logo_url">URL Gambar Logo</label>
+                    <input type="url" id="logo_url" name="logo_url" value="{{ old('logo_url', $client->logo_url && (str_starts_with($client->logo_url, 'http://') || str_starts_with($client->logo_url, 'https://')) ? $client->logo_url : '') }}"
+                           class="admin-input @error('logo_url') border-red-400 @enderror"
+                           placeholder="https://contoh.com/logo.png">
+                    @error('logo_url')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    <p class="text-xs text-gray-400 mt-1">Gunakan URL langsung ke file gambar publik (JPG, PNG, atau WebP).</p>
+
+                    @if(env('VERCEL'))
+                        <p class="mt-2 text-xs text-amber-700">Upload file belum tersimpan permanen di Vercel. Gunakan URL gambar publik di atas.</p>
+                    @else
+                        <input type="file" name="logo" accept="image/jpeg,image/png,image/webp" class="admin-input @error('logo') border-red-400 @enderror">
+                        <p class="text-xs text-gray-400 mt-1">JPG, PNG, WebP. Maks 2MB. Jika mengisi URL dan upload sekaligus, file upload dipakai.</p>
+                    @endif
                 </div>
 
                 <div>

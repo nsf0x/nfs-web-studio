@@ -35,7 +35,7 @@
                     <td class="px-5 py-3.5">
                         <div class="flex items-center gap-3">
                             @if($client->logo_url)
-                                <img src="{{ str_starts_with($client->logo_url, 'http') ? $client->logo_url : Storage::url($client->logo_url) }}"
+                                <img src="{{ str_starts_with($client->logo_url, 'http://') || str_starts_with($client->logo_url, 'https://') ? $client->logo_url : Storage::url($client->logo_url) }}"
                                      alt="{{ $client->name }}" class="h-8 w-auto max-w-[60px] object-contain">
                             @else
                                 <div class="w-8 h-8 bg-navy-100 rounded-lg flex items-center justify-center">

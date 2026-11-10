@@ -16,12 +16,13 @@ class ClientController extends Controller
     public function index(): View
     {
         $clients = Client::orderBy('sort_order')->paginate(20);
+
         return view('admin.clients.index', compact('clients'));
     }
 
     public function create(): View
     {
-        return view('admin.clients.form', ['client' => new Client()]);
+        return view('admin.clients.form', ['client' => new Client]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -29,6 +30,7 @@ class ClientController extends Controller
         $data = $this->validateClient($request);
         $data = $this->handleLogoUpload($request, $data);
         Client::create($data);
+
         return redirect()->route('admin.clients.index')->with('success', 'Klien berhasil ditambahkan.');
     }
 
@@ -42,32 +44,36 @@ class ClientController extends Controller
         $data = $this->validateClient($request, $client);
         $data = $this->handleLogoUpload($request, $data, $client);
         $client->update($data);
+
         return redirect()->route('admin.clients.index')->with('success', 'Klien berhasil diperbarui.');
     }
 
     public function destroy(Client $client): RedirectResponse
     {
-        if ($client->logo_url && !str_starts_with($client->logo_url, 'http')) {
+        if ($client->logo_url && ! $this->isExternalUrl($client->logo_url)) {
             Storage::disk('public')->delete($client->logo_url);
         }
         $client->delete();
+
         return redirect()->route('admin.clients.index')->with('success', 'Klien berhasil dihapus.');
     }
 
     private function validateClient(Request $request, ?Client $client = null): array
     {
         $request->merge(['slug' => Str::slug((string) $request->input('slug', ''))]);
-        $slugRule = 'unique:clients,slug' . ($client ? ",{$client->id}" : '');
+        $slugRule = 'unique:clients,slug'.($client ? ",{$client->id}" : '');
         $data = $request->validate([
-            'name'        => ['required', 'string', 'max:150'],
-            'slug'        => ['required', 'string', 'max:150', $slugRule],
-            'logo'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'name' => ['required', 'string', 'max:150'],
+            'slug' => ['required', 'string', 'max:150', $slugRule],
+            'logo_url' => ['nullable', 'url', 'max:2048'],
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'website_url' => ['nullable', 'url', 'max:255'],
-            'industry'    => ['nullable', 'string', 'max:100'],
-            'is_active'   => ['boolean'],
-            'sort_order'  => ['nullable', 'integer'],
+            'industry' => ['nullable', 'string', 'max:100'],
+            'is_active' => ['boolean'],
+            'sort_order' => ['nullable', 'integer'],
         ]);
         $data['is_active'] = $request->boolean('is_active');
+
         return $data;
     }
 
@@ -78,12 +84,26 @@ class ClientController extends Controller
             if ($logoPath === false) {
                 throw new RuntimeException('Unable to store the uploaded client logo.');
             }
-            if ($client?->logo_url && !str_starts_with($client->logo_url, 'http')) {
+            if ($client?->logo_url && ! $this->isExternalUrl($client->logo_url)) {
                 Storage::disk('public')->delete($client->logo_url);
             }
             $data['logo_url'] = $logoPath;
+        } elseif (
+            $client?->logo_url
+            && array_key_exists('logo_url', $data)
+            && $client->logo_url !== $data['logo_url']
+            && ! $this->isExternalUrl($client->logo_url)
+        ) {
+            Storage::disk('public')->delete($client->logo_url);
         }
+
         unset($data['logo']);
+
         return $data;
+    }
+
+    private function isExternalUrl(string $url): bool
+    {
+        return str_starts_with($url, 'https://') || str_starts_with($url, 'http://');
     }
 }

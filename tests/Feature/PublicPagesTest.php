@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Mail\InquiryNotification;
+use App\Models\Client;
 use App\Models\Inquiry;
 use App\Models\Package;
 use App\Models\Service;
@@ -35,6 +36,21 @@ class PublicPagesTest extends TestCase
         foreach (['/', '/kontak', '/portofolio', '/kebijakan-privasi', '/syarat-ketentuan', '/robots.txt', '/sitemap.xml'] as $path) {
             $this->get($path)->assertOk();
         }
+    }
+
+    public function test_client_logo_links_to_the_client_website(): void
+    {
+        $client = Client::where('slug', 'kaizen-kreasi-indonesia')->firstOrFail();
+        $client->update([
+            'logo_url' => 'https://cdn.example.test/kaizen-logo.png',
+            'website_url' => 'https://kaizenkreasi.com',
+        ]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('src="https://cdn.example.test/kaizen-logo.png"', false)
+            ->assertSee('href="https://kaizenkreasi.com"', false)
+            ->assertSee('aria-label="Kunjungi website Kaizen Kreasi Indonesia"', false);
     }
 
     public function test_contact_form_stores_an_inquiry_and_sends_a_notification(): void
