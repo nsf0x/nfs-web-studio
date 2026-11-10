@@ -57,7 +57,7 @@ class PricingPackageSeederTest extends TestCase
 
         $this->get('/layanan/redesign-maintenance')
             ->assertOk()
-            ->assertSee('Lihat Detail Paket')
+            ->assertSee('Pilih Paket via WhatsApp')
             ->assertSee('per bulan')
             ->assertSee('per tahun');
 
@@ -66,27 +66,29 @@ class PricingPackageSeederTest extends TestCase
             ->assertSee('Harga sesuai ruang lingkup');
     }
 
-    public function test_package_selection_opens_a_detail_summary_before_contact(): void
+    public function test_package_selection_opens_whatsapp_with_the_selected_package_details(): void
     {
         $this->seed(PricingPackageSeeder::class);
 
-        $response = $this->get('/layanan/website-company-profile')
+        $this->get('/layanan/website-company-profile')
             ->assertOk()
-            ->assertSee('Lihat Detail Paket')
-            ->assertSee('show-package-details')
-            ->assertSee('x-on:show-package-details.window')
-            ->assertSee('Lanjut ke Kontak')
-            ->assertSee('Website profil usaha sederhana');
+            ->assertSee('Pilih Paket via WhatsApp')
+            ->assertDontSee('Lihat Detail Paket')
+            ->assertSee('href="https://wa.me/6288212743260?text=Halo+NFS+Web+Studio%2C+saya+tertarik+dengan+paket+berikut%3A%0ALayanan%3A+Website+Company+Profile%0APaket%3A+Basic', false)
+            ->assertSee('Fitur+paket%3A%0A-+Hingga+5+halaman', false);
+    }
 
-        $this->assertSame(1, substr_count($response->getContent(), 'aria-labelledby="package-detail-title"'));
-
-        $package = Package::where('slug', 'company-profile-basic')->firstOrFail();
-
-        $this->get('/kontak?layanan=' . $package->service_id . '&paket=' . $package->id)
+    public function test_contact_page_only_shows_contact_information_and_no_form(): void
+    {
+        $this->get('/kontak')
             ->assertOk()
-            ->assertSee('Paket yang Diminati')
-            ->assertSee('Lanjutkan konsultasi via WhatsApp')
-            ->assertSee($package->name);
+            ->assertSee('Informasi Kontak')
+            ->assertSee('href="tel:088212743260"', false)
+            ->assertSee('href="mailto:naufalshaflyfawwaz@gmail.com"', false)
+            ->assertSee('href="https://wa.me/6288212743260?', false)
+            ->assertSee('transaksi')
+            ->assertDontSee('<form', false)
+            ->assertDontSee('Kirim Pesan');
     }
 
     public function test_it_matches_existing_packages_by_category_and_name_without_creating_duplicates(): void

@@ -46,24 +46,38 @@
         @endforeach
     </ul>
 
-    <button type="button"
-       @click="$dispatch('show-package-details', @js([
-           'name' => $package->name,
-           'serviceName' => $service->name,
-           'description' => $package->description ?: 'Paket pembuatan website yang disesuaikan dengan kebutuhan bisnis Anda.',
-           'price' => $package->price !== null && $package->price > 0 ? 'Rp' . number_format((float) $package->price, 0, ',', '.') : 'Harga dibahas sesuai ruang lingkup',
-           'billingPeriod' => match ($package->billing_period) {
-               'monthly' => 'per bulan',
-               'yearly' => 'per tahun',
-               default => 'sekali bayar',
-           },
-           'deliveryDays' => $package->delivery_days ? $package->delivery_days . ' hari pengerjaan' : null,
-           'revisionCount' => $package->revision_count !== null ? $package->revision_count . 'x revisi' : null,
-           'features' => $package->features->pluck('feature')->values(),
-           'contactUrl' => route('kontak') . '?layanan=' . $service->id . '&paket=' . $package->id,
-       ]))"
+    @php
+        $whatsapp = preg_replace('/[^0-9]/', '', \App\Models\SiteSetting::get('whatsapp', '6288212743260'));
+        $packagePrice = $package->price !== null && $package->price > 0
+            ? 'Rp' . number_format((float) $package->price, 0, ',', '.')
+            : 'Dibahas sesuai ruang lingkup';
+        $billingPeriod = match ($package->billing_period) {
+            'monthly' => 'per bulan',
+            'yearly' => 'per tahun',
+            default => 'sekali bayar',
+        };
+        $message = "Halo NFS Web Studio, saya tertarik dengan paket berikut:\n"
+            . "Layanan: {$service->name}\n"
+            . "Paket: {$package->name}\n"
+            . "Harga: {$packagePrice} ({$billingPeriod})\n";
+
+        if ($package->delivery_days) {
+            $message .= "Estimasi pengerjaan: {$package->delivery_days} hari\n";
+        }
+
+        if ($package->revision_count !== null) {
+            $message .= "Revisi: {$package->revision_count}x\n";
+        }
+
+        $message .= "Fitur paket:\n- " . $package->features->pluck('feature')->implode("\n- ");
+        $whatsappUrl = "https://wa.me/{$whatsapp}?text=" . urlencode($message);
+    @endphp
+
+    <a href="{{ $whatsappUrl }}"
+       target="_blank"
+       rel="noopener noreferrer"
        class="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-center font-semibold shadow-md transition-all duration-200 hover:shadow-hover
               {{ $package->is_featured ? 'bg-gold text-navy-900 hover:bg-gold-light' : 'btn-primary' }}">
-        Lihat Detail Paket
-    </button>
+        Pilih Paket via WhatsApp
+    </a>
 </article>

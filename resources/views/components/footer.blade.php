@@ -73,7 +73,7 @@
                     <li>
                         <a href="{{ route('kontak') }}"
                            class="inline-block mt-2 px-4 py-2 bg-gold text-navy-900 font-semibold text-xs rounded-lg hover:bg-gold-light transition-colors">
-                            Kirim Pesan
+                            Informasi Kontak
                         </a>
                     </li>
                 </ul>

@@ -72,8 +72,8 @@
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 class="text-2xl font-bold text-navy-900 mb-3">Ingin Menjadi Bagian dari Portofolio Kami?</h2>
         <p class="text-gray-500 mb-7">Hubungi kami sekarang dan diskusikan proyek website impian Anda.</p>
-        <a href="{{ route('kontak') }}" class="btn-primary">
-            Mulai Proyek Anda
+        <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', \App\Models\SiteSetting::get('whatsapp', '6288212743260')) }}?text={{ urlencode('Halo NFS Web Studio, saya tertarik untuk memulai proyek website.') }}" target="_blank" rel="noopener noreferrer" class="btn-primary">
+            Chat & Transaksi via WhatsApp
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
         </a>
     </div>

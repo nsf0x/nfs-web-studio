@@ -38,6 +38,14 @@ class PublicPagesTest extends TestCase
         }
     }
 
+    public function test_home_page_has_no_inquiry_form_and_routes_contact_to_whatsapp(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertDontSee('action="' . route('kontak.store') . '"', false)
+            ->assertSee('Transaksi via WhatsApp');
+    }
+
     public function test_client_logo_links_to_the_client_website(): void
     {
         $client = Client::where('slug', 'kaizen-kreasi-indonesia')->firstOrFail();

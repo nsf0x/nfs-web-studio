@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\InquiryRequest;
 use App\Mail\InquiryNotification;
 use App\Models\Inquiry;
-use App\Models\Service;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
@@ -15,11 +14,7 @@ class KontakController extends Controller
 {
     public function index(): View
     {
-        $services = Service::active()
-            ->with(['packages' => fn ($q) => $q->active(), 'packages.features'])
-            ->get();
-
-        return view('kontak', compact('services'));
+        return view('kontak');
     }
 
     public function store(InquiryRequest $request): RedirectResponse
