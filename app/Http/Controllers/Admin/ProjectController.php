@@ -76,9 +76,30 @@ class ProjectController extends Controller
     {
         $data = $this->validateProject($request, $project);
         $oldThumbnailUrl = $project->thumbnail_url;
-        $data = $this->handleThumbnail($request, $data, app(SupabaseStorage::class));
-        $project->update($data);
-        $this->deleteReplacedThumbnail($oldThumbnailUrl, $project->thumbnail_url, app(SupabaseStorage::class));
+        $storage = app(SupabaseStorage::class);
+        $stage = 'thumbnail_upload';
+
+        try {
+            Log::debug('Admin project update reached storage stage.', [
+                'project_id' => $project->getKey(),
+                'has_thumbnail' => $request->hasFile('thumbnail'),
+            ]);
+            $data = $this->handleThumbnail($request, $data, $storage);
+
+            $stage = 'database_update';
+            $project->update($data);
+
+            $stage = 'old_thumbnail_cleanup';
+            $this->deleteReplacedThumbnail($oldThumbnailUrl, $project->thumbnail_url, $storage);
+        } catch (Throwable $exception) {
+            Log::error('Admin project update failed.', [
+                'project_id' => $project->getKey(),
+                'stage' => $stage,
+                'exception' => $exception::class,
+            ]);
+
+            throw $exception;
+        }
 
         return redirect()->route('admin.projects.index')->with('success', 'Proyek berhasil diperbarui.');
     }
