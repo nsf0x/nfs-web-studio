@@ -54,6 +54,27 @@ class ProjectThumbnailUploadTest extends TestCase
             && str_contains($request->url(), '/storage/v1/object/client-logos/projects/'));
     }
 
+    public function test_admin_can_create_project_without_a_thumbnail(): void
+    {
+        Http::fake();
+
+        $this->actingAs($this->admin(), 'admin')
+            ->post(route('admin.projects.store'), [
+                'client_id' => $this->client()->id,
+                'title' => 'Website Tanpa Thumbnail',
+                'slug' => 'website-tanpa-thumbnail',
+                'is_published' => '1',
+            ])
+            ->assertRedirect(route('admin.projects.index'));
+
+        $project = Project::where('slug', 'website-tanpa-thumbnail')->firstOrFail();
+
+        $this->assertNull($project->thumbnail_url);
+        $this->assertFalse($project->is_featured);
+        $this->assertTrue($project->is_published);
+        Http::assertNothingSent();
+    }
+
     public function test_replacing_project_thumbnail_removes_the_previous_supabase_object(): void
     {
         Http::fake([

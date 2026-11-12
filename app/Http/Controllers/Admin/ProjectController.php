@@ -9,6 +9,7 @@ use App\Models\Service;
 use App\Services\SupabaseStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -107,10 +108,18 @@ class ProjectController extends Controller
             'is_featured' => ['boolean'],
             'is_published' => ['boolean'],
         ]);
-        $data['is_featured'] = $request->boolean('is_featured');
-        $data['is_published'] = $request->boolean('is_published');
+        $isPostgres = DB::connection()->getDriverName() === 'pgsql';
+        $data['is_featured'] = $this->databaseBoolean($request, 'is_featured', $isPostgres);
+        $data['is_published'] = $this->databaseBoolean($request, 'is_published', $isPostgres);
 
         return $data;
+    }
+
+    private function databaseBoolean(Request $request, string $key, bool $isPostgres): bool|string
+    {
+        $value = $request->boolean($key);
+
+        return $isPostgres ? ($value ? 'true' : 'false') : $value;
     }
 
     private function handleThumbnail(Request $request, array $data, SupabaseStorage $storage): array
