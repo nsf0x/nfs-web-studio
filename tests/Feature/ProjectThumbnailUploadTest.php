@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Admin;
 use App\Models\Client;
 use App\Models\Project;
+use App\Support\DatabaseBoolean;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Http\UploadedFile;
@@ -135,6 +136,14 @@ class ProjectThumbnailUploadTest extends TestCase
             ->assertSee('400 * 1024')
             ->assertSee('Memuat pemroses gambar...')
             ->assertSee('input.disabled = false');
+    }
+
+    public function test_boolean_values_are_compatible_with_postgresql_and_other_drivers(): void
+    {
+        $this->assertSame('true', DatabaseBoolean::forDriver(true, 'pgsql'));
+        $this->assertSame('false', DatabaseBoolean::forDriver(false, 'pgsql'));
+        $this->assertTrue(DatabaseBoolean::forDriver(true, 'sqlite'));
+        $this->assertFalse(DatabaseBoolean::forDriver(false, 'sqlite'));
     }
 
     private function admin(): Admin

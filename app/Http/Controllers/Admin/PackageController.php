@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Package;
 use App\Models\PackageFeature;
 use App\Models\Service;
+use App\Support\DatabaseBoolean;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -92,8 +93,8 @@ class PackageController extends Controller
             'features' => ['nullable', 'array'],
             'features.*' => ['nullable', 'string', 'max:255'],
         ]);
-        $data['is_featured'] = $request->boolean('is_featured');
-        $data['is_active'] = $request->boolean('is_active');
+        $data['is_featured'] = DatabaseBoolean::fromRequest($request, 'is_featured');
+        $data['is_active'] = DatabaseBoolean::fromRequest($request, 'is_active');
 
         return $data;
     }

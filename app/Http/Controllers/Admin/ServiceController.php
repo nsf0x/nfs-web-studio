@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Service;
+use App\Support\DatabaseBoolean;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -61,7 +62,7 @@ class ServiceController extends Controller
             'is_active'         => ['boolean'],
         ]);
 
-        $data['is_active'] = $request->boolean('is_active');
+        $data['is_active'] = DatabaseBoolean::fromRequest($request, 'is_active');
 
         return $data;
     }

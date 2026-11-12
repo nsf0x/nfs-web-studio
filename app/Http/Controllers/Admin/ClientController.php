@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Services\SupabaseStorage;
+use App\Support\DatabaseBoolean;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -72,7 +73,7 @@ class ClientController extends Controller
             'is_active' => ['boolean'],
             'sort_order' => ['nullable', 'integer'],
         ]);
-        $data['is_active'] = $request->boolean('is_active');
+        $data['is_active'] = DatabaseBoolean::fromRequest($request, 'is_active');
 
         return $data;
     }

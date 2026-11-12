@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\Testimonial;
+use App\Support\DatabaseBoolean;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -59,7 +60,7 @@ class TestimonialController extends Controller
             'rating'          => ['required', 'integer', 'min:1', 'max:5'],
             'is_published'    => ['boolean'],
         ]);
-        $data['is_published'] = $request->boolean('is_published');
+        $data['is_published'] = DatabaseBoolean::fromRequest($request, 'is_published');
         return $data;
     }
 }
