@@ -77,10 +77,12 @@
                             <p class="text-xs text-gray-400 mt-1">Thumbnail saat ini. Upload baru untuk mengganti.</p>
                         </div>
                     @endif
-                    <input type="file" name="thumbnail" accept="image/jpeg,image/png,image/webp"
+                    <input type="file" id="thumbnail" name="thumbnail" accept="image/jpeg,image/png,image/webp"
                            class="admin-input @error('thumbnail') border-red-400 @enderror">
                     @error('thumbnail')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
-                    <p class="text-xs text-gray-400 mt-1">JPG, PNG, atau WebP. Maksimal 2 MB. File disimpan permanen di Supabase Storage. Rasio 16:9 ideal.</p>
+                    <p id="thumbnail-upload-status" class="text-xs text-gray-500 mt-1" aria-live="polite">
+                        JPG, PNG, atau WebP. Gambar akan dikecilkan otomatis agar upload lancar. File disimpan di Supabase Storage.
+                    </p>
                     @if(! config('services.supabase.url') || ! config('services.supabase.service_role_key'))
                         <p class="mt-2 text-xs text-amber-700">Upload belum siap. Atur kredensial Supabase Storage di Environment Variables Vercel.</p>
                     @endif
@@ -134,3 +136,97 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+(() => {
+    const form = document.querySelector('input[name="thumbnail"]')?.form;
+    const input = document.getElementById('thumbnail');
+    const status = document.getElementById('thumbnail-upload-status');
+
+    if (!form || !input || !status) return;
+
+    let processing = false;
+    const maxBytes = 1500 * 1024;
+
+    const toBlob = (canvas, quality) => new Promise((resolve, reject) => {
+        canvas.toBlob(blob => {
+            if (blob) resolve(blob);
+            else reject(new Error('Gagal memproses gambar.'));
+        }, 'image/jpeg', quality);
+    });
+
+    form.addEventListener('submit', async event => {
+        if (form.dataset.thumbnailReady === 'true') {
+            delete form.dataset.thumbnailReady;
+            return;
+        }
+
+        const file = input.files?.[0];
+        if (!file) return;
+
+        event.preventDefault();
+        if (processing) return;
+        processing = true;
+
+        const submitter = event.submitter;
+        const submitButton = submitter instanceof HTMLButtonElement ? submitter : null;
+        if (submitButton) submitButton.disabled = true;
+        status.textContent = 'Menyiapkan gambar untuk diunggah...';
+        status.classList.remove('text-red-600');
+
+        try {
+            if (file.size > maxBytes) {
+                const bitmap = await createImageBitmap(file);
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+
+                if (!context) throw new Error('Browser tidak dapat memproses gambar.');
+
+                let scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+                let quality = 0.82;
+                let blob;
+
+                for (let attempt = 0; attempt < 12; attempt++) {
+                    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+                    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+                    context.fillStyle = '#fff';
+                    context.fillRect(0, 0, canvas.width, canvas.height);
+                    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+                    blob = await toBlob(canvas, quality);
+
+                    if (blob.size <= maxBytes) break;
+                    if (quality > 0.5) quality -= 0.1;
+                    else scale *= 0.8;
+                }
+
+                bitmap.close();
+
+                if (!blob || blob.size > maxBytes) {
+                    throw new Error('Gambar terlalu besar untuk diproses. Pilih gambar lain.');
+                }
+
+                const compressed = new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', {
+                    type: 'image/jpeg',
+                    lastModified: Date.now(),
+                });
+                const transfer = new DataTransfer();
+                transfer.items.add(compressed);
+                input.files = transfer.files;
+                status.textContent = 'Gambar berhasil dikecilkan. Mengunggah...';
+            }
+
+            form.dataset.thumbnailReady = 'true';
+            processing = false;
+            if (submitButton) submitButton.disabled = false;
+            form.requestSubmit(submitter || undefined);
+        } catch (error) {
+            processing = false;
+            if (submitButton) submitButton.disabled = false;
+            status.textContent = error instanceof Error ? error.message : 'Gagal menyiapkan gambar.';
+            status.classList.add('text-red-600');
+        }
+    });
+})();
+</script>
+@endpush

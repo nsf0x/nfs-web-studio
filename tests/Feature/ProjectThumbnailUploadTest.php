@@ -104,6 +104,16 @@ class ProjectThumbnailUploadTest extends TestCase
         Http::assertNothingSent();
     }
 
+    public function test_project_form_compresses_large_images_before_uploading(): void
+    {
+        $this->actingAs($this->admin(), 'admin')
+            ->get(route('admin.projects.create'))
+            ->assertOk()
+            ->assertSee('Gambar akan dikecilkan otomatis')
+            ->assertSee('createImageBitmap')
+            ->assertSee('1500 * 1024');
+    }
+
     private function admin(): Admin
     {
         return Admin::create([
