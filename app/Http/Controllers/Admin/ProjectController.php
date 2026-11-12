@@ -9,9 +9,11 @@ use App\Models\Service;
 use App\Services\SupabaseStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Throwable;
 
 class ProjectController extends Controller
 {
@@ -37,8 +39,26 @@ class ProjectController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $this->validateProject($request);
-        $data = $this->handleThumbnail($request, $data, app(SupabaseStorage::class));
-        Project::create($data);
+
+        $stage = 'thumbnail_upload';
+
+        try {
+            Log::debug('Admin project upload reached storage stage.', [
+                'has_thumbnail' => $request->hasFile('thumbnail'),
+            ]);
+            $data = $this->handleThumbnail($request, $data, app(SupabaseStorage::class));
+
+            $stage = 'database_insert';
+            Log::debug('Admin project upload reached database stage.');
+            Project::create($data);
+        } catch (Throwable $exception) {
+            Log::error('Admin project creation failed.', [
+                'stage' => $stage,
+                'exception' => $exception::class,
+            ]);
+
+            throw $exception;
+        }
 
         return redirect()->route('admin.projects.index')->with('success', 'Proyek berhasil ditambahkan.');
     }
