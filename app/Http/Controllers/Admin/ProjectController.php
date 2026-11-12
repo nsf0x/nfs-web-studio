@@ -6,12 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\Project;
 use App\Models\Service;
+use App\Services\SupabaseStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use RuntimeException;
 
 class ProjectController extends Controller
 {
@@ -35,7 +35,7 @@ class ProjectController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $this->validateProject($request);
-        $data = $this->handleThumbnail($request, $data);
+        $data = $this->handleThumbnail($request, $data, app(SupabaseStorage::class));
         Project::create($data);
         return redirect()->route('admin.projects.index')->with('success', 'Proyek berhasil ditambahkan.');
     }
@@ -50,16 +50,16 @@ class ProjectController extends Controller
     public function update(Request $request, Project $project): RedirectResponse
     {
         $data = $this->validateProject($request, $project);
-        $data = $this->handleThumbnail($request, $data, $project);
+        $oldThumbnailUrl = $project->thumbnail_url;
+        $data = $this->handleThumbnail($request, $data, app(SupabaseStorage::class));
         $project->update($data);
+        $this->deleteReplacedThumbnail($oldThumbnailUrl, $project->thumbnail_url, app(SupabaseStorage::class));
         return redirect()->route('admin.projects.index')->with('success', 'Proyek berhasil diperbarui.');
     }
 
     public function destroy(Project $project): RedirectResponse
     {
-        if ($project->thumbnail_url && !str_starts_with($project->thumbnail_url, 'http')) {
-            Storage::disk('public')->delete($project->thumbnail_url);
-        }
+        $this->deleteThumbnail($project->thumbnail_url, app(SupabaseStorage::class));
         $project->delete();
         return redirect()->route('admin.projects.index')->with('success', 'Proyek berhasil dihapus.');
     }
@@ -86,19 +86,39 @@ class ProjectController extends Controller
         return $data;
     }
 
-    private function handleThumbnail(Request $request, array $data, ?Project $project = null): array
+    private function handleThumbnail(Request $request, array $data, SupabaseStorage $storage): array
     {
         if ($request->hasFile('thumbnail')) {
-            $thumbnailPath = $request->file('thumbnail')->store('projects', 'public');
-            if ($thumbnailPath === false) {
-                throw new RuntimeException('Unable to store the uploaded project thumbnail.');
-            }
-            if ($project?->thumbnail_url && !str_starts_with($project->thumbnail_url, 'http')) {
-                Storage::disk('public')->delete($project->thumbnail_url);
-            }
-            $data['thumbnail_url'] = $thumbnailPath;
+            $data['thumbnail_url'] = $storage->upload($request->file('thumbnail'), 'projects');
         }
         unset($data['thumbnail']);
         return $data;
+    }
+
+    private function deleteReplacedThumbnail(
+        ?string $oldThumbnailUrl,
+        ?string $newThumbnailUrl,
+        SupabaseStorage $storage
+    ): void {
+        if ($oldThumbnailUrl && $oldThumbnailUrl !== $newThumbnailUrl) {
+            $this->deleteThumbnail($oldThumbnailUrl, $storage);
+        }
+    }
+
+    private function deleteThumbnail(?string $url, SupabaseStorage $storage): void
+    {
+        if (!$url) {
+            return;
+        }
+
+        if ($storage->manages($url)) {
+            $storage->delete($url);
+
+            return;
+        }
+
+        if (!str_starts_with($url, 'http://') && !str_starts_with($url, 'https://')) {
+            Storage::disk('public')->delete($url);
+        }
     }
 }

@@ -16,7 +16,7 @@ class SupabaseStorage
         if (! $this->hasSupabaseConfiguration()) {
             if (app()->environment('production')) {
                 throw new RuntimeException(
-                    'Logo upload needs SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, and SUPABASE_STORAGE_BUCKET configured.'
+                    'Image uploads need SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, and SUPABASE_STORAGE_BUCKET configured.'
                 );
             }
 
