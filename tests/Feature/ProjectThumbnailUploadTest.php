@@ -109,9 +109,11 @@ class ProjectThumbnailUploadTest extends TestCase
         $this->actingAs($this->admin(), 'admin')
             ->get(route('admin.projects.create'))
             ->assertOk()
-            ->assertSee('Gambar akan dikecilkan otomatis')
+            ->assertSee('File besar akan dikecilkan otomatis')
             ->assertSee('createImageBitmap')
-            ->assertSee('1500 * 1024');
+            ->assertSee('400 * 1024')
+            ->assertSee('Memuat pemroses gambar...')
+            ->assertSee('input.disabled = false');
     }
 
     private function admin(): Admin
