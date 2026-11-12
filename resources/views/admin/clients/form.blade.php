@@ -48,10 +48,13 @@
                         </div>
                     @endif
                     <label class="admin-label" for="logo">Upload Logo</label>
-                    <input type="file" id="logo" name="logo" accept="image/jpeg,image/png,image/webp"
+                    <input type="file" id="logo" name="logo" accept="image/jpeg,image/png,image/webp" disabled
                            class="admin-input @error('logo') border-red-400 @enderror">
                     @error('logo')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
-                    <p class="text-xs text-gray-400 mt-1">JPG, PNG, atau WebP. Maksimal 2 MB. File disimpan permanen di Supabase Storage.</p>
+                    <p id="logo-upload-status" class="text-xs text-gray-500 mt-1" aria-live="polite">
+                        Memuat pemroses gambar...
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">JPG, PNG, atau WebP. Maksimal 2 MB. Gambar besar akan dikecilkan otomatis dan disimpan permanen di Supabase Storage.</p>
                     @if(! config('services.supabase.url') || ! config('services.supabase.service_role_key'))
                         <p class="mt-2 text-xs text-amber-700">Upload belum siap. Atur kredensial Supabase Storage di Environment Variables Vercel.</p>
                     @endif
@@ -104,3 +107,106 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+(() => {
+    const input = document.getElementById('logo');
+    const status = document.getElementById('logo-upload-status');
+    const form = input?.form;
+
+    if (!form || !input || !status) return;
+
+    const maxBytes = 400 * 1024;
+    let processing = false;
+    let ready = false;
+
+    const toBlob = (canvas, quality) => new Promise((resolve, reject) => {
+        canvas.toBlob(blob => {
+            if (blob) resolve(blob);
+            else reject(new Error('Gagal memproses gambar.'));
+        }, 'image/webp', quality);
+    });
+
+    input.disabled = false;
+    status.textContent = 'Pilih gambar JPG, PNG, atau WebP. File besar akan dikecilkan otomatis.';
+
+    input.addEventListener('change', async () => {
+        const file = input.files?.[0];
+        ready = !file;
+
+        if (!file) {
+            status.textContent = 'Pilih gambar JPG, PNG, atau WebP.';
+            return;
+        }
+
+        if (file.size <= maxBytes) {
+            ready = true;
+            status.textContent = `Gambar siap diunggah (${Math.ceil(file.size / 1024)} KB).`;
+            status.classList.remove('text-red-600');
+            return;
+        }
+
+        processing = true;
+        status.textContent = 'Menyiapkan gambar untuk diunggah...';
+        status.classList.remove('text-red-600');
+
+        let bitmap;
+
+        try {
+            bitmap = await createImageBitmap(file);
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+
+            if (!context) throw new Error('Browser tidak dapat memproses gambar.');
+
+            let scale = Math.min(1, 1200 / Math.max(bitmap.width, bitmap.height));
+            let quality = 0.8;
+            let blob;
+
+            for (let attempt = 0; attempt < 14; attempt++) {
+                canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+                canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+                blob = await toBlob(canvas, quality);
+
+                if (blob.size <= maxBytes) break;
+                if (quality > 0.5) quality -= 0.1;
+                else scale *= 0.8;
+            }
+
+            if (!blob || blob.size > maxBytes) {
+                throw new Error('Gambar tidak dapat dikecilkan. Pilih gambar lain.');
+            }
+
+            const compressed = new File([blob], file.name.replace(/\.[^.]+$/, '') + '.webp', {
+                type: 'image/webp',
+                lastModified: Date.now(),
+            });
+            const transfer = new DataTransfer();
+            transfer.items.add(compressed);
+            input.files = transfer.files;
+            ready = true;
+            status.textContent = `Gambar siap diunggah (${Math.ceil(compressed.size / 1024)} KB setelah dikecilkan).`;
+        } catch (error) {
+            status.textContent = error instanceof Error ? error.message : 'Gagal menyiapkan gambar.';
+            status.classList.add('text-red-600');
+        } finally {
+            bitmap?.close();
+            processing = false;
+        }
+    });
+
+    form.addEventListener('submit', event => {
+        if (input.files?.length && (!ready || processing)) {
+            event.preventDefault();
+            status.textContent = processing
+                ? 'Tunggu sampai gambar selesai diproses.'
+                : 'Pilih ulang gambar agar dapat disiapkan untuk upload.';
+            status.classList.add('text-red-600');
+        }
+    });
+})();
+</script>
+@endpush

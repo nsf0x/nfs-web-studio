@@ -145,6 +145,19 @@ class ClientLogoUploadTest extends TestCase
         );
     }
 
+    public function test_client_form_compresses_large_logo_files_before_uploading(): void
+    {
+        $this->actingAs($this->admin(), 'admin')
+            ->get(route('admin.clients.create'))
+            ->assertOk()
+            ->assertSee('File besar akan dikecilkan otomatis')
+            ->assertSee('createImageBitmap')
+            ->assertSee('400 * 1024')
+            ->assertSee('image/webp')
+            ->assertSee('Memuat pemroses gambar...')
+            ->assertSee('input.disabled = false');
+    }
+
     private function admin(): Admin
     {
         return Admin::create([
