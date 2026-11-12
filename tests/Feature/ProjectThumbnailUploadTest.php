@@ -23,14 +23,14 @@ class ProjectThumbnailUploadTest extends TestCase
         config([
             'services.supabase.url' => 'https://project-ref.supabase.co',
             'services.supabase.service_role_key' => 'test-service-role-key',
-            'services.supabase.storage_bucket' => 'project-assets',
+            'services.supabase.storage_bucket' => 'client-logos',
         ]);
     }
 
     public function test_admin_uploads_project_thumbnail_to_supabase_storage(): void
     {
         Http::fake([
-            '*supabase.co/storage/v1/object/project-assets*' => Http::response(['Key' => 'ok'], 200),
+            '*supabase.co/storage/v1/object/client-logos*' => Http::response(['Key' => 'ok'], 200),
         ]);
 
         $this->actingAs($this->admin(), 'admin')
@@ -46,18 +46,18 @@ class ProjectThumbnailUploadTest extends TestCase
         $project = Project::where('slug', 'website-proyek')->firstOrFail();
 
         $this->assertStringStartsWith(
-            'https://project-ref.supabase.co/storage/v1/object/public/project-assets/projects/',
+            'https://project-ref.supabase.co/storage/v1/object/public/client-logos/projects/',
             $project->thumbnail_url
         );
 
         Http::assertSent(fn (ClientRequest $request): bool => $request->method() === 'POST'
-            && str_contains($request->url(), '/storage/v1/object/project-assets/projects/'));
+            && str_contains($request->url(), '/storage/v1/object/client-logos/projects/'));
     }
 
     public function test_replacing_project_thumbnail_removes_the_previous_supabase_object(): void
     {
         Http::fake([
-            '*supabase.co/storage/v1/object/project-assets*' => Http::response(['Key' => 'ok'], 200),
+            '*supabase.co/storage/v1/object/client-logos*' => Http::response(['Key' => 'ok'], 200),
         ]);
 
         $client = $this->client();
@@ -65,7 +65,7 @@ class ProjectThumbnailUploadTest extends TestCase
             'client_id' => $client->id,
             'title' => 'Website Proyek',
             'slug' => 'website-proyek',
-            'thumbnail_url' => 'https://project-ref.supabase.co/storage/v1/object/public/project-assets/projects/old.png',
+            'thumbnail_url' => 'https://project-ref.supabase.co/storage/v1/object/public/client-logos/projects/old.png',
             'is_published' => true,
         ]);
 
@@ -81,8 +81,27 @@ class ProjectThumbnailUploadTest extends TestCase
             ->assertRedirect(route('admin.projects.index'));
 
         Http::assertSent(fn (ClientRequest $request): bool => $request->method() === 'DELETE'
-            && str_contains($request->url(), '/storage/v1/object/project-assets')
+            && str_contains($request->url(), '/storage/v1/object/client-logos')
             && $request['prefixes'] === ['projects/old.png']);
+    }
+
+    public function test_project_thumbnail_has_the_same_upload_limit_as_client_logos(): void
+    {
+        Http::fake();
+
+        $this->actingAs($this->admin(), 'admin')
+            ->from(route('admin.projects.create'))
+            ->post(route('admin.projects.store'), [
+                'client_id' => $this->client()->id,
+                'title' => 'Website Proyek',
+                'slug' => 'website-proyek',
+                'thumbnail' => UploadedFile::fake()->image('thumbnail.png')->size(2049),
+                'is_published' => '1',
+            ])
+            ->assertRedirect(route('admin.projects.create'))
+            ->assertSessionHasErrors('thumbnail');
+
+        Http::assertNothingSent();
     }
 
     private function admin(): Admin

@@ -18,16 +18,18 @@ class ProjectController extends Controller
     public function index(): View
     {
         $projects = Project::with(['client', 'service'])->orderByDesc('id')->paginate(15);
+
         return view('admin.projects.index', compact('projects'));
     }
 
     public function create(): View
     {
-        $clients  = Client::active()->get();
+        $clients = Client::active()->get();
         $services = Service::active()->get();
+
         return view('admin.projects.form', [
-            'project'  => new Project(),
-            'clients'  => $clients,
+            'project' => new Project,
+            'clients' => $clients,
             'services' => $services,
         ]);
     }
@@ -37,13 +39,15 @@ class ProjectController extends Controller
         $data = $this->validateProject($request);
         $data = $this->handleThumbnail($request, $data, app(SupabaseStorage::class));
         Project::create($data);
+
         return redirect()->route('admin.projects.index')->with('success', 'Proyek berhasil ditambahkan.');
     }
 
     public function edit(Project $project): View
     {
-        $clients  = Client::active()->get();
+        $clients = Client::active()->get();
         $services = Service::active()->get();
+
         return view('admin.projects.form', compact('project', 'clients', 'services'));
     }
 
@@ -54,6 +58,7 @@ class ProjectController extends Controller
         $data = $this->handleThumbnail($request, $data, app(SupabaseStorage::class));
         $project->update($data);
         $this->deleteReplacedThumbnail($oldThumbnailUrl, $project->thumbnail_url, app(SupabaseStorage::class));
+
         return redirect()->route('admin.projects.index')->with('success', 'Proyek berhasil diperbarui.');
     }
 
@@ -61,28 +66,30 @@ class ProjectController extends Controller
     {
         $this->deleteThumbnail($project->thumbnail_url, app(SupabaseStorage::class));
         $project->delete();
+
         return redirect()->route('admin.projects.index')->with('success', 'Proyek berhasil dihapus.');
     }
 
     private function validateProject(Request $request, ?Project $project = null): array
     {
         $request->merge(['slug' => Str::slug((string) $request->input('slug', ''))]);
-        $slugRule = 'unique:projects,slug' . ($project ? ",{$project->id}" : '');
+        $slugRule = 'unique:projects,slug'.($project ? ",{$project->id}" : '');
         $data = $request->validate([
-            'client_id'     => ['required', 'exists:clients,id'],
-            'service_id'    => ['nullable', 'exists:services,id'],
-            'title'         => ['required', 'string', 'max:200'],
-            'slug'          => ['required', 'string', 'max:200', $slugRule],
-            'description'   => ['nullable', 'string'],
-            'thumbnail'     => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
-            'project_url'   => ['nullable', 'url', 'max:255'],
-            'tech_stack'    => ['nullable', 'string', 'max:255'],
-            'completed_at'  => ['nullable', 'date'],
-            'is_featured'   => ['boolean'],
-            'is_published'  => ['boolean'],
+            'client_id' => ['required', 'exists:clients,id'],
+            'service_id' => ['nullable', 'exists:services,id'],
+            'title' => ['required', 'string', 'max:200'],
+            'slug' => ['required', 'string', 'max:200', $slugRule],
+            'description' => ['nullable', 'string'],
+            'thumbnail' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'project_url' => ['nullable', 'url', 'max:255'],
+            'tech_stack' => ['nullable', 'string', 'max:255'],
+            'completed_at' => ['nullable', 'date'],
+            'is_featured' => ['boolean'],
+            'is_published' => ['boolean'],
         ]);
-        $data['is_featured']  = $request->boolean('is_featured');
+        $data['is_featured'] = $request->boolean('is_featured');
         $data['is_published'] = $request->boolean('is_published');
+
         return $data;
     }
 
@@ -92,6 +99,7 @@ class ProjectController extends Controller
             $data['thumbnail_url'] = $storage->upload($request->file('thumbnail'), 'projects');
         }
         unset($data['thumbnail']);
+
         return $data;
     }
 
@@ -107,7 +115,7 @@ class ProjectController extends Controller
 
     private function deleteThumbnail(?string $url, SupabaseStorage $storage): void
     {
-        if (!$url) {
+        if (! $url) {
             return;
         }
 
@@ -117,7 +125,7 @@ class ProjectController extends Controller
             return;
         }
 
-        if (!str_starts_with($url, 'http://') && !str_starts_with($url, 'https://')) {
+        if (! str_starts_with($url, 'http://') && ! str_starts_with($url, 'https://')) {
             Storage::disk('public')->delete($url);
         }
     }

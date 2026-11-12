@@ -77,8 +77,13 @@
                             <p class="text-xs text-gray-400 mt-1">Thumbnail saat ini. Upload baru untuk mengganti.</p>
                         </div>
                     @endif
-                    <input type="file" name="thumbnail" accept="image/*" class="admin-input @error('thumbnail') border-red-400 @enderror">
-                    <p class="text-xs text-gray-400 mt-1">JPG, PNG, WebP. Maks 4MB. Rasio 16:9 ideal.</p>
+                    <input type="file" name="thumbnail" accept="image/jpeg,image/png,image/webp"
+                           class="admin-input @error('thumbnail') border-red-400 @enderror">
+                    @error('thumbnail')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    <p class="text-xs text-gray-400 mt-1">JPG, PNG, atau WebP. Maksimal 2 MB. File disimpan permanen di Supabase Storage. Rasio 16:9 ideal.</p>
+                    @if(! config('services.supabase.url') || ! config('services.supabase.service_role_key'))
+                        <p class="mt-2 text-xs text-amber-700">Upload belum siap. Atur kredensial Supabase Storage di Environment Variables Vercel.</p>
+                    @endif
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
