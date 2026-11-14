@@ -5,7 +5,7 @@
 
 @section('json_ld')
 {
-  "@context": "https://schema.org",
+  "@@context": "https://schema.org",
   "@type": "CreativeWork",
   "name": "{{ $project->title }}",
   "description": "{{ Str::limit(strip_tags($project->description), 200) }}",
